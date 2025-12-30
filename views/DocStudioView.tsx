@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { GoogleGenAI } from "@google/genai";
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 const DocStudioView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'CREATE' | 'EXTRACT'>('CREATE');
@@ -27,6 +29,7 @@ const DocStudioView: React.FC = () => {
     });
     
     doc.save('converted-document.pdf');
+    logActivity(ToolType.DOC_STUDIO, 'Exported PDF', `Created document of ${textContent.length} chars`);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +62,7 @@ const DocStudioView: React.FC = () => {
         
         setExtractedText(response.text || 'No text could be extracted.');
         setIsLoading(false);
+        logActivity(ToolType.DOC_STUDIO, 'Extracted PDF', `Processed: ${file.name}`);
       };
       reader.readAsDataURL(file);
     } catch (err) {

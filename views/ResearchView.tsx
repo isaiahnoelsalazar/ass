@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { researchQuery } from '../services/geminiService';
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 const ResearchView: React.FC = () => {
   const [query, setQuery] = useState('');
@@ -13,6 +15,7 @@ const ResearchView: React.FC = () => {
     try {
       const res = await researchQuery(query);
       setResult(res);
+      logActivity(ToolType.RESEARCHER, 'Performed Research', query.slice(0, 50));
     } catch (err) {
       console.error(err);
       alert('Search failed. Check your API key.');

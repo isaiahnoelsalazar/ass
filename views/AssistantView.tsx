@@ -1,7 +1,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { chatWithGemini } from '../services/geminiService';
-import { Message } from '../types';
+import { Message, ToolType } from '../types';
+import { logActivity } from '../services/activityService';
 
 const AssistantView: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -28,6 +29,7 @@ const AssistantView: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
@@ -37,7 +39,7 @@ const AssistantView: React.FC = () => {
         parts: [{ text: m.content }]
       }));
       
-      const response = await chatWithGemini(input, history);
+      const response = await chatWithGemini(currentInput, history);
       
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -47,6 +49,7 @@ const AssistantView: React.FC = () => {
       };
       
       setMessages(prev => [...prev, assistantMsg]);
+      logActivity(ToolType.ASSISTANT, 'Chat Message', currentInput.slice(0, 50) + (currentInput.length > 50 ? '...' : ''));
     } catch (error) {
       console.error(error);
       setMessages(prev => [...prev, {

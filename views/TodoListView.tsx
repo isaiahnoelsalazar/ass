@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { chatWithGemini } from '../services/geminiService';
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 interface TodoItem {
   id: string;
@@ -30,13 +32,18 @@ const TodoListView: React.FC = () => {
       completed: false,
     };
     setTodos([newTodo, ...todos]);
+    logActivity(ToolType.TODO_LIST, 'Task Added', input.slice(0, 50));
     setInput('');
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(todos.map(todo => 
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    const todo = todos.find(t => t.id === id);
+    setTodos(todos.map(t => 
+      t.id === id ? { ...t, completed: !t.completed } : t
     ));
+    if (todo && !todo.completed) {
+      logActivity(ToolType.TODO_LIST, 'Task Completed', todo.text);
+    }
   };
 
   const deleteTodo = (id: string) => {
@@ -59,6 +66,7 @@ const TodoListView: React.FC = () => {
       setTodos(todos.map(todo => 
         todo.id === id ? { ...todo, subTasks: steps } : todo
       ));
+      logActivity(ToolType.TODO_LIST, 'AI Steps Generated', `Planned breakdown for: ${taskText}`);
     } catch (error) {
       console.error(error);
       alert('AI failed to generate steps. Please try again.');

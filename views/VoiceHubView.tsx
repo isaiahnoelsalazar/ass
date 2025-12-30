@@ -1,6 +1,8 @@
 
 import React, { useState, useRef } from 'react';
 import { generateSpeech } from '../services/geminiService';
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 function decode(base64: string) {
   const binaryString = atob(base64);
@@ -60,6 +62,7 @@ const VoiceHubView: React.FC = () => {
         source.buffer = audioBuffer;
         source.connect(ctx.destination);
         source.start();
+        logActivity(ToolType.VOICE_HUB, 'Speech Generated', `Text converted using ${selectedVoice} voice`);
       }
     } catch (error) {
       console.error(error);

@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { generateImage } from '../services/geminiService';
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 const ImageGenView: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -16,6 +18,7 @@ const ImageGenView: React.FC = () => {
     try {
       const url = await generateImage(prompt);
       setGeneratedImage(url);
+      logActivity(ToolType.IMAGE_GEN, 'Generated Image', prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''));
     } catch (err) {
       setError('Generation failed. Please try a different prompt or check API settings.');
       console.error(err);

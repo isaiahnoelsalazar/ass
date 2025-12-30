@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { chatWithGemini } from '../services/geminiService';
+import { logActivity } from '../services/activityService';
+import { ToolType } from '../types';
 
 type LanguageMode = 'PYTHON' | 'WEB' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC';
 
@@ -108,6 +110,7 @@ const CodePlaygroundView: React.FC = () => {
       try {
         pyodide.setStdout({ batched: (str: string) => setOutput(prev => prev + str + "\n") });
         await pyodide.runPythonAsync(code);
+        logActivity(ToolType.CODE_PLAYGROUND, 'Ran Python Code', 'Executed native WASM Python scripts');
       } catch (err: any) {
         setOutput(prev => prev + "\n[PYTHON ERROR]\n" + err.message);
       } finally {
@@ -126,6 +129,7 @@ ${code}
 
         const response = await chatWithGemini(prompt);
         setOutput(prev => prev + (response || "No output returned."));
+        logActivity(ToolType.CODE_PLAYGROUND, `Ran ${config.name} Code`, 'Used AI-Simulated execution engine');
       } catch (err) {
         setOutput(prev => prev + "\n[SYSTEM ERROR] Failed to connect to virtual compiler.");
       } finally {
@@ -167,6 +171,7 @@ ${output}
 Please help me debug or optimize this code. Provide a short explanation and the corrected code block.`;
       const response = await chatWithGemini(prompt);
       setOutput(prev => prev + "\n\n--- AI DEBUGGER ASSISTANCE ---\n" + response);
+      logActivity(ToolType.CODE_PLAYGROUND, 'Code Debugged', `Used AI to analyze ${LANGUAGES[mode].name} code`);
     } catch (err) {
       alert("AI Service unavailable.");
     } finally {
