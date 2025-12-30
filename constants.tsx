@@ -1,0 +1,48 @@
+
+import React from 'react';
+import { Tool, ToolType } from './types';
+
+export const TOOLS: Tool[] = [
+  {
+    id: ToolType.ASSISTANT,
+    name: 'Smart Assistant',
+    description: 'General purpose AI for answering any question, drafting emails, or brainstorming.',
+    icon: '✨',
+    color: 'bg-indigo-500',
+  },
+  {
+    id: ToolType.DOC_STUDIO,
+    name: 'Doc Studio',
+    description: 'Convert text to PDF or extract content from PDF documents instantly.',
+    icon: '📂',
+    color: 'bg-purple-600',
+  },
+  {
+    id: ToolType.IMAGE_GEN,
+    name: 'Visual Creator',
+    description: 'Transform text descriptions into stunning high-quality images instantly.',
+    icon: '🎨',
+    color: 'bg-rose-500',
+  },
+  {
+    id: ToolType.TEXT_ANALYSIS,
+    name: 'Text Engine',
+    description: 'Summarize long documents, extract key insights, or translate content.',
+    icon: '📄',
+    color: 'bg-emerald-500',
+  },
+  {
+    id: ToolType.CODE_HELPER,
+    name: 'Code Master',
+    description: 'Debug, explain, or generate code snippets in any programming language.',
+    icon: '💻',
+    color: 'bg-sky-500',
+  },
+  {
+    id: ToolType.QUICK_TOOLS,
+    name: 'Utility Box',
+    description: 'Unit conversion, password generation, and other essential daily tools.',
+    icon: '🛠️',
+    color: 'bg-amber-500',
+  }
+];
