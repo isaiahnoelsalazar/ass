@@ -47,7 +47,7 @@ export const generateSpeech = async (text: string, voiceName: string = 'Zephyr')
 export const generateImage = async (prompt: string) => {
   const ai = getAI();
   const response: GenerateContentResponse = await ai.models.generateContent({
-    model: 'gemini-3-pro-image-preview',
+    model: 'imagen-4.0-generate-001',
     contents: {
       parts: [{ text: prompt }],
     },
