@@ -20,7 +20,7 @@ const ImageGenView: React.FC = () => {
       setGeneratedImage(url);
       logActivity(ToolType.IMAGE_GEN, 'Generated Image', prompt.slice(0, 50) + (prompt.length > 50 ? '...' : ''));
     } catch (err) {
-      setError('Generation failed. Please try a different prompt or check API settings.' + err);
+      setError('Generation failed. Please try a different prompt or check API settings.');
       console.error(err);
     } finally {
       setIsLoading(false);
