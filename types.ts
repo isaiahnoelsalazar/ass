@@ -8,7 +8,8 @@ export enum ToolType {
   DOC_STUDIO = 'DOC_STUDIO',
   VOICE_HUB = 'VOICE_HUB',
   RESEARCHER = 'RESEARCHER',
-  CODE_PLAYGROUND = 'CODE_PLAYGROUND'
+  CODE_PLAYGROUND = 'CODE_PLAYGROUND',
+  TODO_LIST = 'TODO_LIST'
 }
 
 export interface Message {

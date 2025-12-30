@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.TODO_LIST,
+    name: 'AI Task Planner',
+    description: 'Manage your tasks with AI-powered sub-task suggestions and breakdown logic.',
+    icon: '✅',
+    color: 'bg-blue-500',
+  },
+  {
     id: ToolType.RESEARCHER,
     name: 'Smart Researcher',
     description: 'Real-time web search for the latest news, events, and factual data with citations.',
@@ -20,7 +27,7 @@ export const TOOLS: Tool[] = [
   {
     id: ToolType.CODE_PLAYGROUND,
     name: 'Code Playground',
-    description: 'Live Python compiler and HTML/JS previewer with AI debugging support.',
+    description: 'Live multi-language compiler and HTML/JS previewer with AI debugging support.',
     icon: '🚀',
     color: 'bg-slate-800',
   },
