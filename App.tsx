@@ -8,6 +8,8 @@ import ImageGenView from './views/ImageGenView';
 import TextToolsView from './views/TextToolsView';
 import UtilityBoxView from './views/UtilityBoxView';
 import DocStudioView from './views/DocStudioView';
+import VoiceHubView from './views/VoiceHubView';
+import ResearchView from './views/ResearchView';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
@@ -18,6 +20,10 @@ const App: React.FC = () => {
         return <Dashboard onToolSelect={setActiveTool} />;
       case ToolType.ASSISTANT:
         return <AssistantView />;
+      case ToolType.RESEARCHER:
+        return <ResearchView />;
+      case ToolType.VOICE_HUB:
+        return <VoiceHubView />;
       case ToolType.IMAGE_GEN:
         return <ImageGenView />;
       case ToolType.TEXT_ANALYSIS:
@@ -27,8 +33,6 @@ const App: React.FC = () => {
       case ToolType.DOC_STUDIO:
         return <DocStudioView />;
       case ToolType.CODE_HELPER:
-        // For Code Helper, we can pass a specific instruction if needed, 
-        // but for now, it uses the base AssistantView.
         return <AssistantView />;
       default:
         return <Dashboard onToolSelect={setActiveTool} />;

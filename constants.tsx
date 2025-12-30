@@ -11,6 +11,20 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.RESEARCHER,
+    name: 'Smart Researcher',
+    description: 'Real-time web search for the latest news, events, and factual data with citations.',
+    icon: '🔍',
+    color: 'bg-teal-500',
+  },
+  {
+    id: ToolType.VOICE_HUB,
+    name: 'Voice Hub',
+    description: 'Convert any text into natural, human-like speech with various AI voices.',
+    icon: '🔊',
+    color: 'bg-cyan-600',
+  },
+  {
     id: ToolType.DOC_STUDIO,
     name: 'Doc Studio',
     description: 'Convert text to PDF or extract content from PDF documents instantly.',

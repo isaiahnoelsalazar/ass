@@ -5,7 +5,9 @@ export enum ToolType {
   TEXT_ANALYSIS = 'TEXT_ANALYSIS',
   CODE_HELPER = 'CODE_HELPER',
   QUICK_TOOLS = 'QUICK_TOOLS',
-  DOC_STUDIO = 'DOC_STUDIO'
+  DOC_STUDIO = 'DOC_STUDIO',
+  VOICE_HUB = 'VOICE_HUB',
+  RESEARCHER = 'RESEARCHER'
 }
 
 export interface Message {
@@ -13,6 +15,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  groundingChunks?: any[];
 }
 
 export interface Tool {
