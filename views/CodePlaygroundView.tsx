@@ -114,7 +114,6 @@ const CodePlaygroundView: React.FC = () => {
         setIsRunning(false);
       }
     } else if (!config.isNative) {
-      // AI SIMULATION for C++, Java, C#, Pascal, BASIC
       try {
         setOutput(`[System] Initializing Virtual ${config.name} Environment...\n[System] Compiling source...\n[System] Executing...\n\n`);
         
@@ -133,7 +132,7 @@ ${code}
         setIsRunning(false);
       }
     } else {
-      setIsRunning(false); // Web mode doesn't need a run button trigger
+      setIsRunning(false);
     }
   };
 
@@ -141,6 +140,16 @@ ${code}
     setMode(newMode);
     setCode(LANGUAGES[newMode].template);
     setOutput('');
+  };
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 300;
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
   };
 
   const askAIForHelp = async () => {
@@ -172,35 +181,49 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         <p className="text-slate-500">Professional multi-language IDE with native & AI-powered execution.</p>
       </div>
 
-      {/* Improved Language Selector Bar */}
-      <div className="relative mb-8">
+      {/* Enhanced Scrollable Language Selector with Controls */}
+      <div className="relative mb-8 group">
+        <button 
+          onClick={() => scroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white shadow-lg border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -ml-5"
+        >
+          ←
+        </button>
+        
         <div 
           ref={scrollContainerRef}
-          className="bg-slate-100 p-2 rounded-2xl flex items-center overflow-x-auto gap-2 no-scrollbar scroll-smooth"
-          style={{ width: '100%', maxWidth: '100%' }}
+          className="bg-slate-100 p-2 rounded-2xl flex items-center overflow-x-auto gap-2 no-scrollbar scroll-smooth relative z-10"
         >
           {(Object.keys(LANGUAGES) as LanguageMode[]).map((langKey) => (
             <button
               key={langKey}
               onClick={() => changeLanguage(langKey)}
-              className={`flex-shrink-0 px-6 py-3.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap min-w-[120px] justify-center ${
+              className={`flex-shrink-0 px-6 py-4 rounded-xl text-sm font-bold transition-all flex items-center gap-3 whitespace-nowrap min-w-[140px] justify-center ${
                 mode === langKey 
-                  ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' 
-                  : 'text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
+                  ? 'bg-slate-800 text-white shadow-xl shadow-slate-300' 
+                  : 'bg-transparent text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
               }`}
             >
-              <span className="text-lg">{LANGUAGES[langKey].icon}</span>
+              <span className="text-xl">{LANGUAGES[langKey].icon}</span>
               <span>{LANGUAGES[langKey].name}</span>
               {!LANGUAGES[langKey].isNative && (
-                <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-black uppercase tracking-tighter ${
+                <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-tighter ${
                   mode === langKey ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'
                 }`}>AI</span>
               )}
             </button>
           ))}
         </div>
-        {/* Subtle scroll indicators */}
-        <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-100/80 to-transparent pointer-events-none rounded-r-2xl hidden md:block"></div>
+
+        <button 
+          onClick={() => scroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white shadow-lg border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -mr-5"
+        >
+          →
+        </button>
+        
+        {/* Visual Fade Indicator for horizontal scroll */}
+        <div className="absolute right-2 top-2 bottom-2 w-16 bg-gradient-to-l from-slate-100 to-transparent pointer-events-none z-15 rounded-r-2xl"></div>
       </div>
 
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[650px] mb-10">
@@ -208,9 +231,9 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         <div className="flex flex-col bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-700">
           <div className="bg-slate-800 px-8 py-4 flex items-center justify-between border-b border-slate-700">
             <div className="flex gap-2">
-              <div className="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-inner"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-amber-500 shadow-inner"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-inner"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-rose-500"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-amber-500"></div>
+              <div className="w-3.5 h-3.5 rounded-full bg-emerald-500"></div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{LANGUAGES[mode].name} EDITOR</span>
@@ -296,7 +319,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
           💡
         </div>
         <p className="text-sm text-slate-600 leading-relaxed">
-          <strong className="text-slate-900">Developer Note:</strong> Python and HTML/JS run natively in your browser for peak performance. Other languages (C++, Java, C#, Pascal, BASIC) are executed via AI-simulated virtual environments for instant results without complex server setups.
+          <strong className="text-slate-900">Developer Note:</strong> This playground supports 7 programming languages. Use the scroll arrows at the top to access all of them, including <strong>Pascal</strong> and <strong>BASIC</strong>.
         </p>
       </div>
     </div>
