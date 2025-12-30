@@ -18,6 +18,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-teal-500',
   },
   {
+    id: ToolType.CODE_PLAYGROUND,
+    name: 'Code Playground',
+    description: 'Live Python compiler and HTML/JS previewer with AI debugging support.',
+    icon: '🚀',
+    color: 'bg-slate-800',
+  },
+  {
     id: ToolType.VOICE_HUB,
     name: 'Voice Hub',
     description: 'Convert any text into natural, human-like speech with various AI voices.',
@@ -44,13 +51,6 @@ export const TOOLS: Tool[] = [
     description: 'Summarize long documents, extract key insights, or translate content.',
     icon: '📄',
     color: 'bg-emerald-500',
-  },
-  {
-    id: ToolType.CODE_HELPER,
-    name: 'Code Master',
-    description: 'Debug, explain, or generate code snippets in any programming language.',
-    icon: '💻',
-    color: 'bg-sky-500',
   },
   {
     id: ToolType.QUICK_TOOLS,

@@ -7,7 +7,8 @@ export enum ToolType {
   QUICK_TOOLS = 'QUICK_TOOLS',
   DOC_STUDIO = 'DOC_STUDIO',
   VOICE_HUB = 'VOICE_HUB',
-  RESEARCHER = 'RESEARCHER'
+  RESEARCHER = 'RESEARCHER',
+  CODE_PLAYGROUND = 'CODE_PLAYGROUND'
 }
 
 export interface Message {
