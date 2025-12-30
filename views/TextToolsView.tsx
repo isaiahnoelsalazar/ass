@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { analyzeText } from '../services/analyzeText'; // Assuming analyzeText is exported correctly
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 
