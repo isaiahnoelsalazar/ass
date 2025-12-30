@@ -20,7 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTool, onToolSelect }) =
             className="text-xl font-bold text-slate-900 flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-sm">A</div>
-            AS Service
+            ASS
           </button>
         </div>
         
@@ -56,23 +56,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTool, onToolSelect }) =
             </button>
           ))}
         </nav>
-        
-        <div className="p-4 border-t border-slate-100">
-          <div className="bg-indigo-50 p-4 rounded-xl">
-            <p className="text-xs text-indigo-700 font-medium mb-1">PRO PLAN</p>
-            <p className="text-sm text-indigo-900 font-bold mb-3">Upgrade for more limits</p>
-            <button className="w-full bg-indigo-600 text-white text-xs py-2 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
-              Go Pro
-            </button>
-          </div>
-        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50 relative">
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
-          <button onClick={() => onToolSelect('DASHBOARD')} className="font-bold">AS Service</button>
+          <button onClick={() => onToolSelect('DASHBOARD')} className="font-bold">ASS</button>
           <div className="w-8 h-8 bg-indigo-600 rounded-full"></div>
         </header>
         
