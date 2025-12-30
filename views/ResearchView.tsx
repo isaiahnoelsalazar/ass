@@ -14,7 +14,7 @@ const ResearchView: React.FC = () => {
       const res = await researchQuery(query);
       setResult(res);
     } catch (err) {
-      alert(err);
+      console.error(err);
       alert('Search failed. Check your API key.');
     } finally {
       setIsLoading(false);
