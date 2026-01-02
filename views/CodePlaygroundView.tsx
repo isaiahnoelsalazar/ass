@@ -4,7 +4,7 @@ import { chatWithGemini } from '../services/geminiService';
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 
-type LanguageMode = 'PYTHON' | 'WEB' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' | 'SQL_SERVER' | 'SQLITE' | 'MYSQL';
+type LanguageMode = 'PYTHON' | 'WEB' | 'PHP' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' | 'SQL_SERVER' | 'SQLITE' | 'MYSQL';
 
 interface LanguageConfig {
   name: string;
@@ -28,6 +28,13 @@ const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
     isNative: true,
     category: 'Core',
     template: '<div style="text-align: center; margin-top: 50px; font-family: sans-serif;">\n  <h1 style="color: #6366f1;">Hello Web!</h1>\n  <p>Edit this HTML to see live updates.</p>\n  <button onclick="alert(\'Clicked!\')">Click Me</button>\n</div>'
+  },
+  PHP: {
+    name: 'PHP',
+    icon: '🐘',
+    isNative: false,
+    category: 'Core',
+    template: '<?php\n\necho "Hello from Simulated PHP!\\n";\n\n$fruits = ["Apple", "Banana", "Cherry"];\nforeach ($fruits as $fruit) {\n    echo "Fruit: $fruit\\n";\n}\n\necho "\\nCurrent server time: " . date("Y-m-d H:i:s");'
   },
   SQLITE: {
     name: 'SQLite',
