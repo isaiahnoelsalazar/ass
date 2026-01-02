@@ -15,6 +15,7 @@ import TodoListView from './views/TodoListView';
 import SmartNotepadView from './views/SmartNotepadView';
 import QRGeneratorView from './views/QRGeneratorView';
 import CounterView from './views/CounterView';
+import ShoppingListView from './views/ShoppingListView';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
@@ -47,6 +48,8 @@ const App: React.FC = () => {
         return <QRGeneratorView />;
       case ToolType.SIMPLE_COUNTER:
         return <CounterView />;
+      case ToolType.SHOPPING_LIST:
+        return <ShoppingListView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:

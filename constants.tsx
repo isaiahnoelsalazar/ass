@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.SHOPPING_LIST,
+    name: 'Shopping List',
+    description: 'Track items, manage quantities, and automatically calculate your total budget.',
+    icon: '🛒',
+    color: 'bg-emerald-600',
+  },
+  {
     id: ToolType.SMART_NOTEPAD,
     name: 'Smart Notepad',
     description: 'A distraction-free writing space with AI tools to polish, expand, or summarize your notes.',
