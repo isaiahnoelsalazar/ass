@@ -18,6 +18,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-orange-500',
   },
   {
+    id: ToolType.QR_GENERATOR,
+    name: 'QR Studio',
+    description: 'Instantly generate customizable QR codes for URLs, text, or contact information.',
+    icon: '📱',
+    color: 'bg-violet-600',
+  },
+  {
     id: ToolType.TODO_LIST,
     name: 'AI Task Planner',
     description: 'Manage your tasks with AI-powered sub-task suggestions and breakdown logic.',

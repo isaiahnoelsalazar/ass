@@ -13,6 +13,7 @@ import ResearchView from './views/ResearchView';
 import CodePlaygroundView from './views/CodePlaygroundView';
 import TodoListView from './views/TodoListView';
 import SmartNotepadView from './views/SmartNotepadView';
+import QRGeneratorView from './views/QRGeneratorView';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
@@ -41,6 +42,8 @@ const App: React.FC = () => {
         return <TodoListView />;
       case ToolType.SMART_NOTEPAD:
         return <SmartNotepadView />;
+      case ToolType.QR_GENERATOR:
+        return <QRGeneratorView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:
