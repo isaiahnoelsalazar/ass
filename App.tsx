@@ -6,7 +6,8 @@ import Dashboard from './views/Dashboard';
 import AssistantView from './views/AssistantView';
 import ImageGenView from './views/ImageGenView';
 import TextToolsView from './views/TextToolsView';
-import UtilityBoxView from './views/UtilityBoxView';
+import ConverterStudioView from './views/ConverterStudioView';
+import PasswordGenView from './views/PasswordGenView';
 import DocStudioView from './views/DocStudioView';
 import VoiceHubView from './views/VoiceHubView';
 import ResearchView from './views/ResearchView';
@@ -34,8 +35,10 @@ const App: React.FC = () => {
         return <ImageGenView />;
       case ToolType.TEXT_ANALYSIS:
         return <TextToolsView />;
-      case ToolType.QUICK_TOOLS:
-        return <UtilityBoxView />;
+      case ToolType.CONVERTER:
+        return <ConverterStudioView />;
+      case ToolType.PASSWORD_GEN:
+        return <PasswordGenView />;
       case ToolType.DOC_STUDIO:
         return <DocStudioView />;
       case ToolType.CODE_PLAYGROUND:

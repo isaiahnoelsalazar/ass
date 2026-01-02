@@ -88,10 +88,17 @@ export const TOOLS: Tool[] = [
     color: 'bg-emerald-500',
   },
   {
-    id: ToolType.QUICK_TOOLS,
-    name: 'Utility Box',
-    description: 'Unit conversion, password generation, and other essential daily tools.',
-    icon: '🛠️',
+    id: ToolType.CONVERTER,
+    name: 'Converter Studio',
+    description: 'High-precision unit transformations for mass, length, temperature, and more.',
+    icon: '⚖️',
+    color: 'bg-indigo-600',
+  },
+  {
+    id: ToolType.PASSWORD_GEN,
+    name: 'Security Lab',
+    description: 'Generate high-entropy encryption keys and secure passwords.',
+    icon: '🔑',
     color: 'bg-amber-500',
   }
 ];
