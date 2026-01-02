@@ -89,15 +89,15 @@ export const TOOLS: Tool[] = [
   },
   {
     id: ToolType.CONVERTER,
-    name: 'Converter Studio',
-    description: 'High-precision unit transformations for mass, length, temperature, and more.',
+    name: 'Conversion Tool',
+    description: 'Convert units for mass, length, temperature, and more.',
     icon: '⚖️',
     color: 'bg-indigo-600',
   },
   {
     id: ToolType.PASSWORD_GEN,
-    name: 'Security Lab',
-    description: 'Generate high-entropy encryption keys and secure passwords.',
+    name: 'Password Generator',
+    description: 'Create secure passwords for your accounts.',
     icon: '🔑',
     color: 'bg-amber-500',
   }
