@@ -4,13 +4,14 @@ import { chatWithGemini } from '../services/geminiService';
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 
-type LanguageMode = 'PYTHON' | 'WEB' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC';
+type LanguageMode = 'PYTHON' | 'WEB' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' | 'SQL_SERVER' | 'SQLITE' | 'MYSQL';
 
 interface LanguageConfig {
   name: string;
   icon: string;
   template: string;
   isNative: boolean;
+  category: 'Core' | 'Systems' | 'Database';
 }
 
 const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
@@ -18,45 +19,75 @@ const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
     name: 'Python',
     icon: '🐍',
     isNative: true,
+    category: 'Core',
     template: 'print("Hello from Python WASM!")\n\nfor i in range(5):\n    print(f"Counting: {i}")'
   },
   WEB: {
     name: 'HTML/JS',
     icon: '🌐',
     isNative: true,
+    category: 'Core',
     template: '<div style="text-align: center; margin-top: 50px; font-family: sans-serif;">\n  <h1 style="color: #6366f1;">Hello Web!</h1>\n  <p>Edit this HTML to see live updates.</p>\n  <button onclick="alert(\'Clicked!\')">Click Me</button>\n</div>'
+  },
+  SQLITE: {
+    name: 'SQLite',
+    icon: '💾',
+    isNative: false,
+    category: 'Database',
+    template: '-- SQLite Environment\nCREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT, done INTEGER);\nINSERT INTO tasks (title, done) VALUES (\'Build App\', 0), (\'Test SQL\', 1);\n\nSELECT * FROM tasks;'
+  },
+  MYSQL: {
+    name: 'MySQL',
+    icon: '🐬',
+    isNative: false,
+    category: 'Database',
+    template: '-- MySQL Environment\nCREATE TABLE products (\n    id INT AUTO_INCREMENT PRIMARY KEY,\n    name VARCHAR(255),\n    price DECIMAL(10,2)\n);\n\nINSERT INTO products (name, price) VALUES (\'Laptop\', 999.99), (\'Mouse\', 25.50);\n\nSELECT name, price FROM products ORDER BY price DESC;'
+  },
+  SQL_SERVER: {
+    name: 'SQL Server',
+    icon: '🏢',
+    isNative: false,
+    category: 'Database',
+    template: '-- SQL Server (T-SQL) Environment\nCREATE TABLE Employees (\n    ID INT PRIMARY KEY,\n    Name NVARCHAR(100),\n    Department NVARCHAR(50)\n);\n\nINSERT INTO Employees VALUES (1, \'Alice\', \'Engineering\'), (2, \'Bob\', \'Design\');\n\nSELECT * FROM Employees WHERE Department = \'Engineering\';'
   },
   CPP: {
     name: 'C++',
     icon: '⚙️',
     isNative: false,
+    category: 'Systems',
     template: '#include <iostream>\n\nint main() {\n    std::cout << "Hello from Simulated C++!" << std::endl;\n    for(int i=0; i<3; ++i) {\n        std::cout << "Loop index: " << i << std::endl;\n    }\n    return 0;\n}'
   },
   JAVA: {
     name: 'Java',
     icon: '☕',
     isNative: false,
+    category: 'Systems',
     template: 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Simulated Java!");\n        int sum = 0;\n        for(int i=1; i<=10; i++) sum += i;\n        System.out.println("Sum of 1-10: " + sum);\n    }\n}'
   },
   CSHARP: {
     name: 'C#',
     icon: '🔷',
     isNative: false,
+    category: 'Systems',
     template: 'using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello from Simulated C#!");\n        var now = DateTime.Now;\n        Console.WriteLine($"Current Simulated Time: {now}");\n    }\n}'
   },
   PASCAL: {
     name: 'Pascal',
     icon: '📜',
     isNative: false,
+    category: 'Systems',
     template: 'program HelloWorld;\nbegin\n  writeln(\'Hello from Simulated Pascal!\');\n  writeln(\'Classic coding at its best.\');\nend.'
   },
   BASIC: {
     name: 'BASIC',
     icon: '📟',
     isNative: false,
+    category: 'Systems',
     template: '10 PRINT "HELLO FROM SIMULATED BASIC!"\n20 FOR I = 1 TO 5\n30 PRINT "STEP "; I\n40 NEXT I\n50 END'
   }
 };
+
+const CATEGORIES = ['Core', 'Systems', 'Database'] as const;
 
 const CodePlaygroundView: React.FC = () => {
   const [mode, setMode] = useState<LanguageMode>('PYTHON');
@@ -66,9 +97,7 @@ const CodePlaygroundView: React.FC = () => {
   const [pyodide, setPyodide] = useState<any>(null);
   const [isPyodideLoading, setIsPyodideLoading] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Load Pyodide for Python
   useEffect(() => {
     if (mode === 'PYTHON' && !pyodide && !isPyodideLoading) {
       const load = async () => {
@@ -87,7 +116,6 @@ const CodePlaygroundView: React.FC = () => {
     }
   }, [mode, pyodide]);
 
-  // Update Web Preview
   useEffect(() => {
     if (mode === 'WEB' && iframeRef.current) {
       const doc = iframeRef.current.contentDocument;
@@ -118,9 +146,12 @@ const CodePlaygroundView: React.FC = () => {
       }
     } else if (!config.isNative) {
       try {
-        setOutput(`[System] Initializing Virtual ${config.name} Environment...\n[System] Compiling source...\n[System] Executing...\n\n`);
+        const isSql = config.category === 'Database';
+        setOutput(`[System] Initializing Virtual ${config.name} ${isSql ? 'Database' : 'Environment'}...\n[System] ${isSql ? 'Executing Queries' : 'Compiling source'}...\n\n`);
         
-        const prompt = `Act as a ${config.name} compiler and runtime. Execute the following code and return ONLY the resulting standard output (stdout) and standard error (stderr). Do not explain the code unless it crashes. If there are syntax errors, report them as a real compiler would.
+        const prompt = `Act as a ${config.name} ${isSql ? 'Database Engine' : 'compiler and runtime'}. Execute the following code and return ONLY the resulting output. 
+        ${isSql ? 'For SELECT statements, return the data in a clean ASCII markdown table format.' : 'Do not explain the code unless it crashes.'}
+        If there are syntax errors, report them as a real ${isSql ? 'DB engine' : 'compiler'} would.
 
 Code:
 \`\`\`${mode.toLowerCase()}
@@ -129,7 +160,7 @@ ${code}
 
         const response = await chatWithGemini(prompt);
         setOutput(prev => prev + (response || "No output returned."));
-        logActivity(ToolType.CODE_PLAYGROUND, `Ran ${config.name} Code`, 'Used AI-Simulated execution engine');
+        logActivity(ToolType.CODE_PLAYGROUND, `Ran ${config.name} Code`, `Used AI-Simulated ${isSql ? 'DB' : 'execution'} engine`);
       } catch (err) {
         setOutput(prev => prev + "\n[SYSTEM ERROR] Failed to connect to virtual compiler.");
       } finally {
@@ -144,16 +175,6 @@ ${code}
     setMode(newMode);
     setCode(LANGUAGES[newMode].template);
     setOutput('');
-  };
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 300;
-      scrollContainerRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
   };
 
   const askAIForHelp = async () => {
@@ -180,58 +201,48 @@ Please help me debug or optimize this code. Provide a short explanation and the 
   };
 
   return (
-    <div className="max-w-6xl mx-auto h-full flex flex-col px-4">
+    <div className="max-w-6xl mx-auto h-full flex flex-col px-4 pb-10">
       <div className="mb-6">
         <h1 className="text-3xl font-extrabold text-slate-900 mb-1">Code Playground</h1>
         <p className="text-slate-500">Professional multi-language IDE with native & AI-powered execution.</p>
       </div>
 
-      {/* Enhanced Scrollable Language Selector with Controls */}
-      <div className="relative mb-8 group">
-        <button 
-          onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white shadow-lg border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -ml-5"
-        >
-          ←
-        </button>
-        
-        <div 
-          ref={scrollContainerRef}
-          className="bg-slate-100 p-2 rounded-2xl flex items-center overflow-x-auto gap-2 no-scrollbar scroll-smooth relative z-10"
-        >
-          {(Object.keys(LANGUAGES) as LanguageMode[]).map((langKey) => (
-            <button
-              key={langKey}
-              onClick={() => changeLanguage(langKey)}
-              className={`flex-shrink-0 px-6 py-4 rounded-xl text-sm font-bold transition-all flex items-center gap-3 whitespace-nowrap min-w-[140px] justify-center ${
-                mode === langKey 
-                  ? 'bg-slate-800 text-white shadow-xl shadow-slate-300' 
-                  : 'bg-transparent text-slate-500 hover:bg-white hover:text-slate-800 hover:shadow-sm'
-              }`}
-            >
-              <span className="text-xl">{LANGUAGES[langKey].icon}</span>
-              <span>{LANGUAGES[langKey].name}</span>
-              {!LANGUAGES[langKey].isNative && (
-                <span className={`text-[9px] px-2 py-0.5 rounded-md font-black uppercase tracking-tighter ${
-                  mode === langKey ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-500'
-                }`}>AI</span>
-              )}
-            </button>
+      {/* Redesigned Language Picker: Categorized Grid */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+          {CATEGORIES.map((cat) => (
+            <div key={cat} className="p-6">
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-2 flex items-center justify-between">
+                <span>{cat} Environments</span>
+                {cat === 'Core' && <span className="text-emerald-500">Native WASM</span>}
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {(Object.keys(LANGUAGES) as LanguageMode[])
+                  .filter(k => LANGUAGES[k].category === cat)
+                  .map((langKey) => (
+                    <button
+                      key={langKey}
+                      onClick={() => changeLanguage(langKey)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all relative group ${
+                        mode === langKey 
+                          ? 'bg-slate-900 text-white shadow-lg' 
+                          : 'hover:bg-slate-50 text-slate-600'
+                      }`}
+                    >
+                      <span className="text-lg">{LANGUAGES[langKey].icon}</span>
+                      <span className="truncate">{LANGUAGES[langKey].name}</span>
+                      {!LANGUAGES[langKey].isNative && mode !== langKey && (
+                        <div className="absolute top-1 right-1 w-1 h-1 bg-indigo-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            </div>
           ))}
         </div>
-
-        <button 
-          onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white shadow-lg border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-900 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 -mr-5"
-        >
-          →
-        </button>
-        
-        {/* Visual Fade Indicator for horizontal scroll */}
-        <div className="absolute right-2 top-2 bottom-2 w-16 bg-gradient-to-l from-slate-100 to-transparent pointer-events-none z-15 rounded-r-2xl"></div>
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[650px] mb-10">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[600px] mb-8">
         {/* Editor Side */}
         <div className="flex flex-col bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-700">
           <div className="bg-slate-800 px-8 py-4 flex items-center justify-between border-b border-slate-700">
@@ -241,7 +252,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
               <div className="w-3.5 h-3.5 rounded-full bg-emerald-500"></div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{LANGUAGES[mode].name} EDITOR</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{LANGUAGES[mode].name} EDITOR</span>
               {isRunning && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>}
             </div>
           </div>
@@ -263,7 +274,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
                 ) : (
                   <>
                     <span className="text-lg">▶</span>
-                    <span>Run {LANGUAGES[mode].name}</span>
+                    <span>{LANGUAGES[mode].category === 'Database' ? 'Execute Query' : `Run Code`}</span>
                   </>
                 )}
               </button>
@@ -271,10 +282,10 @@ Please help me debug or optimize this code. Provide a short explanation and the 
             <button
               onClick={askAIForHelp}
               disabled={isRunning}
-              className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/30 active:scale-[0.98]"
+              className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-50 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/30 active:scale-[0.98]"
             >
               <span className="text-lg">✨</span>
-              <span>Debug with AI</span>
+              <span>AI Debugger</span>
             </button>
           </div>
         </div>
@@ -282,13 +293,13 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         {/* Output Side */}
         <div className="flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-xl border border-slate-200">
           <div className="bg-slate-50 px-8 py-4 flex items-center justify-between border-b border-slate-200">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-              {mode === 'WEB' ? 'Live Preview' : 'Console Output'}
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              {mode === 'WEB' ? 'Live Preview' : 'Output Console'}
             </span>
             {mode !== 'WEB' && (
               <button 
                 onClick={() => setOutput('')}
-                className="text-xs font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase flex items-center gap-1"
+                className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors uppercase flex items-center gap-1"
               >
                 <span>🗑️</span>
                 <span>Clear</span>
@@ -304,13 +315,13 @@ Please help me debug or optimize this code. Provide a short explanation and the 
                 className="w-full h-full border-none bg-white"
               />
             ) : (
-              <div className="p-10 font-mono text-sm text-slate-700 leading-relaxed min-h-full">
+              <div className="p-10 font-mono text-xs text-slate-700 leading-relaxed min-h-full">
                 <pre className="whitespace-pre-wrap">
                   {output || (mode === 'PYTHON' && isPyodideLoading ? "[System] Initializing Python WASM Runtime..." : "[Console] Waiting for execution...")}
                 </pre>
                 {isRunning && mode !== 'PYTHON' && (
                   <div className="mt-4 flex items-center gap-2 text-indigo-500 animate-pulse font-bold">
-                    <span>⚡</span> Processing execution...
+                    <span>⚡</span> Executing on Virtual Machine...
                   </div>
                 )}
               </div>
@@ -319,13 +330,14 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         </div>
       </div>
       
-      <div className="bg-white p-6 rounded-[2rem] border border-slate-200 flex items-center gap-5 shadow-sm mb-10">
-        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl text-indigo-500 flex-shrink-0">
-          💡
+      <div className="bg-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100 flex items-center gap-5 shadow-sm">
+        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm flex-shrink-0">
+          ⚙️
         </div>
-        <p className="text-sm text-slate-600 leading-relaxed">
-          <strong className="text-slate-900">Developer Note:</strong> This playground supports 7 programming languages. Use the scroll arrows at the top to access all of them, including <strong>Pascal</strong> and <strong>BASIC</strong>.
-        </p>
+        <div className="text-xs text-slate-600 leading-relaxed">
+          <strong className="text-slate-900 block mb-1">Architecture Note:</strong> 
+          Languages marked as <span className="text-emerald-600 font-bold">Native</span> run directly in your browser using WebAssembly. All other environments utilize a secure, AI-powered virtualization engine to simulate real-world execution and state management.
+        </div>
       </div>
     </div>
   );
