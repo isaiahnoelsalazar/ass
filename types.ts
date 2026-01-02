@@ -9,7 +9,8 @@ export enum ToolType {
   VOICE_HUB = 'VOICE_HUB',
   RESEARCHER = 'RESEARCHER',
   CODE_PLAYGROUND = 'CODE_PLAYGROUND',
-  TODO_LIST = 'TODO_LIST'
+  TODO_LIST = 'TODO_LIST',
+  SMART_NOTEPAD = 'SMART_NOTEPAD'
 }
 
 export interface Message {

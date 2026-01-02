@@ -12,6 +12,7 @@ import VoiceHubView from './views/VoiceHubView';
 import ResearchView from './views/ResearchView';
 import CodePlaygroundView from './views/CodePlaygroundView';
 import TodoListView from './views/TodoListView';
+import SmartNotepadView from './views/SmartNotepadView';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
@@ -38,6 +39,8 @@ const App: React.FC = () => {
         return <CodePlaygroundView />;
       case ToolType.TODO_LIST:
         return <TodoListView />;
+      case ToolType.SMART_NOTEPAD:
+        return <SmartNotepadView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:

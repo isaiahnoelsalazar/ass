@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.SMART_NOTEPAD,
+    name: 'Smart Notepad',
+    description: 'A distraction-free writing space with AI tools to polish, expand, or summarize your notes.',
+    icon: '📝',
+    color: 'bg-orange-500',
+  },
+  {
     id: ToolType.TODO_LIST,
     name: 'AI Task Planner',
     description: 'Manage your tasks with AI-powered sub-task suggestions and breakdown logic.',
