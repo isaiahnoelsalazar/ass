@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.IMAGE_TO_PDF,
+    name: 'Image to PDF',
+    description: 'Upload multiple images in sequence and export them as a single document.',
+    icon: '🖼️',
+    color: 'bg-violet-500',
+  },
+  {
     id: ToolType.SHOPPING_LIST,
     name: 'Shopping List',
     description: 'Track items, manage quantities, and automatically calculate your total budget.',

@@ -17,6 +17,7 @@ import SmartNotepadView from './views/SmartNotepadView';
 import QRGeneratorView from './views/QRGeneratorView';
 import CounterView from './views/CounterView';
 import ShoppingListView from './views/ShoppingListView';
+import ImageToPdfView from './views/ImageToPdfView';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
@@ -53,6 +54,8 @@ const App: React.FC = () => {
         return <CounterView />;
       case ToolType.SHOPPING_LIST:
         return <ShoppingListView />;
+      case ToolType.IMAGE_TO_PDF:
+        return <ImageToPdfView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:
