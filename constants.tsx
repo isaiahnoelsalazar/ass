@@ -18,6 +18,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-orange-500',
   },
   {
+    id: ToolType.SIMPLE_COUNTER,
+    name: 'Counter Lab',
+    description: 'A simple yet powerful tool for tracking tallies, inventory, or repetitions with custom steps.',
+    icon: '🔢',
+    color: 'bg-blue-600',
+  },
+  {
     id: ToolType.QR_GENERATOR,
     name: 'QR Studio',
     description: 'Instantly generate customizable QR codes for URLs, text, or contact information.',
