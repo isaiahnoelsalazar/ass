@@ -94,9 +94,21 @@ const CodePlaygroundView: React.FC = () => {
   const [code, setCode] = useState(LANGUAGES['PYTHON'].template);
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [pyodide, setPyodide] = useState<any>(null);
   const [isPyodideLoading, setIsPyodideLoading] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (mode === 'PYTHON' && !pyodide && !isPyodideLoading) {
@@ -175,6 +187,7 @@ ${code}
     setMode(newMode);
     setCode(LANGUAGES[newMode].template);
     setOutput('');
+    setIsDropdownOpen(false);
   };
 
   const askAIForHelp = async () => {
@@ -202,43 +215,68 @@ Please help me debug or optimize this code. Provide a short explanation and the 
 
   return (
     <div className="max-w-6xl mx-auto h-full flex flex-col px-4 pb-10">
-      <div className="mb-6">
-        <h1 className="text-3xl font-extrabold text-slate-900 mb-1">Code Playground</h1>
-        <p className="text-slate-500">Professional multi-language IDE with native & AI-powered execution.</p>
-      </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-slate-900 mb-1">Code Playground</h1>
+          <p className="text-slate-500">Professional IDE with multi-architecture execution support.</p>
+        </div>
 
-      {/* Redesigned Language Picker: Categorized Grid */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-xl overflow-hidden mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100">
-          {CATEGORIES.map((cat) => (
-            <div key={cat} className="p-6">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 pl-2 flex items-center justify-between">
-                <span>{cat} Environments</span>
-                {cat === 'Core' && <span className="text-emerald-500">Native WASM</span>}
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(LANGUAGES) as LanguageMode[])
-                  .filter(k => LANGUAGES[k].category === cat)
-                  .map((langKey) => (
-                    <button
-                      key={langKey}
-                      onClick={() => changeLanguage(langKey)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all relative group ${
-                        mode === langKey 
-                          ? 'bg-slate-900 text-white shadow-lg' 
-                          : 'hover:bg-slate-50 text-slate-600'
-                      }`}
-                    >
-                      <span className="text-lg">{LANGUAGES[langKey].icon}</span>
-                      <span className="truncate">{LANGUAGES[langKey].name}</span>
-                      {!LANGUAGES[langKey].isNative && mode !== langKey && (
-                        <div className="absolute top-1 right-1 w-1 h-1 bg-indigo-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      )}
-                    </button>
-                  ))}
+        {/* Custom Dropdown Picker */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full md:w-[280px] bg-white border border-slate-200 px-6 py-4 rounded-[1.5rem] flex items-center justify-between shadow-sm hover:border-slate-300 transition-all text-slate-700 font-bold group"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{LANGUAGES[mode].icon}</span>
+              <div className="text-left">
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest leading-none mb-1">Runtime Environment</p>
+                <p className="flex items-center gap-2">
+                  {LANGUAGES[mode].name}
+                  {!LANGUAGES[mode].isNative && (
+                    <span className="text-[9px] bg-indigo-50 text-indigo-500 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">AI</span>
+                  )}
+                </p>
               </div>
             </div>
-          ))}
+            <span className={`text-slate-300 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute top-full right-0 mt-3 w-full md:w-[480px] bg-white border border-slate-100 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-50">
+                {CATEGORIES.map(cat => (
+                  <div key={cat} className={`p-5 ${cat === 'Database' ? 'bg-slate-50/50' : ''}`}>
+                    <div className="flex items-center justify-between mb-4 px-2">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{cat}</p>
+                      {cat === 'Core' && <span className="text-[8px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">WASM</span>}
+                    </div>
+                    <div className="space-y-1.5">
+                      {(Object.keys(LANGUAGES) as LanguageMode[])
+                        .filter(k => LANGUAGES[k].category === cat)
+                        .map((langKey) => (
+                          <button
+                            key={langKey}
+                            onClick={() => changeLanguage(langKey)}
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all relative group ${
+                              mode === langKey 
+                                ? 'bg-slate-900 text-white shadow-xl' 
+                                : 'hover:bg-white hover:shadow-sm text-slate-600'
+                            }`}
+                          >
+                            <span className="text-lg">{LANGUAGES[langKey].icon}</span>
+                            <span className="flex-1 text-left">{LANGUAGES[langKey].name}</span>
+                            {!LANGUAGES[langKey].isNative && (
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded ${mode === langKey ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity'}`}>AI</span>
+                            )}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -336,7 +374,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         </div>
         <div className="text-xs text-slate-600 leading-relaxed">
           <strong className="text-slate-900 block mb-1">Architecture Note:</strong> 
-          Languages marked as <span className="text-emerald-600 font-bold">Native</span> run directly in your browser using WebAssembly. All other environments utilize a secure, AI-powered virtualization engine to simulate real-world execution and state management.
+          Languages marked as <span className="text-emerald-600 font-bold uppercase text-[10px]">WASM</span> run natively in your browser. All others utilize a secure <span className="text-indigo-600 font-bold uppercase text-[10px]">AI-Virtualization</span> layer to simulate execution and state management.
         </div>
       </div>
     </div>
