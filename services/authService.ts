@@ -30,14 +30,13 @@ export const registerUser = (username: string, email: string, password: string):
 };
 
 export const fetchTest = () => {
+  alert("starting");
   let requestLogin = new XMLHttpRequest();
   requestLogin.open("GET", `https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27`, true);
   requestLogin.withCredentials = true;
   requestLogin.onreadystatechange = function (){
-    if (requestLogin.status == 200 && requestLogin.readyState == 4){
-      let response = requestLogin.responseText;
-      alert(response);
-    }
+    let response = requestLogin.responseText;
+    alert(response);
   }
   requestLogin.send();
 };
