@@ -1,5 +1,5 @@
 
-import { User, ResponseData } from '../types';
+import { User } from '../types';
 import { betterFetch } from '@better-fetch/fetch';
 
 const USERS_KEY = 'ass_users';
@@ -29,16 +29,16 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const fetchTest = async (): Promise<ResponseData> => {
+export const fetchTest = async () => {
   alert("starting");
   try {
-    const { data } = await betterFetch<ResponseData>("https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27");
+    const { data } = await betterFetch<{
+      response_data: string;
+    }>("https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27");
 
     alert(data.response_data);
-    return data;
   } catch(e){
     alert(e);
-    return null as any;
   }
 };
 

@@ -18,10 +18,6 @@ export enum ToolType {
   IMAGE_TO_PDF = 'IMAGE_TO_PDF'
 }
 
-export interface ResponseData {
-  response_data: string;
-}
-
 export interface User {
   username: string;
   email: string;
