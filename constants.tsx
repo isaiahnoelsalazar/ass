@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.URL_TOOL,
+    name: 'URL Studio',
+    description: 'Encode or decode special characters in strings to make them URL-safe.',
+    icon: '🔗',
+    color: 'bg-blue-500',
+  },
+  {
     id: ToolType.IMAGE_TO_PDF,
     name: 'Image to PDF',
     description: 'Upload multiple images in sequence and export them as a single document.',
