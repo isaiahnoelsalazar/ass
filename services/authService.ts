@@ -34,7 +34,12 @@ interface ResponseData {
 }
 
 async function fetchJson(url: string): Promise<ResponseData> {
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      'x-vercel-protection-bypass': 'g4c8DzaBrLw0RcLwj7j6k7134xkTM7B5',
+      'Content-Type': 'application/json'
+    }
+  });
   if (!response.ok) {
     throw new Error("Fetch failed. Dog doesn't wanna play fetch right now.");
   }
