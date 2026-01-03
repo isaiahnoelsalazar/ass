@@ -5,19 +5,6 @@ import { betterFetch } from '@better-fetch/fetch';
 const USERS_KEY = 'ass_users';
 const SESSION_KEY = 'ass_session';
 
-const { data, error } = await betterFetch<{
-  userId: string;
-  id: number;
-  title: string;
-  completed: boolean;
-}>("https://jsonplaceholder.typicode.com/todos/1");
-
-alert(data.title);
-  
-if (error) {
-  alert('Fetch error: ' + error);
-}
-
 export const registerUser = (username: string, email: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
   
@@ -42,7 +29,20 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const loginUser = (identity: string, password: string): User => {
+export const loginUser = async (identity: string, password: string): Promise<User> => {
+  const { data, error } = await betterFetch<{
+    userId: string;
+    id: number;
+    title: string;
+    completed: boolean;
+  }>("https://jsonplaceholder.typicode.com/todos/1");
+
+  alert(data.title);
+    
+  if (error) {
+    alert('Fetch error: ' + error);
+  }
+
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
