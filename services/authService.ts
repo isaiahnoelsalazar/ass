@@ -4,7 +4,11 @@ import { User, ResponseData } from '../types';
 const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
-  const users = JSON.parse(json.response_data || '[]');
+  let formattedString = json.response_data
+    .replace(/'/g, '"')
+    .replace(/\(/g, '[')
+    .replace(/\)/g, ']');
+  const users = JSON.parse(`[${formattedString}]` || '[]');
   
   if (users.find((u: any) => u.username === username || u.email === email)) {
     throw new Error('User already exists');
@@ -58,8 +62,11 @@ fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.
   });
 
 export const loginUser = (identity: string, password: string): User => {
-  alert(json.response_data);
-  const users = JSON.parse(json.response_data || '[]');
+  let formattedString = json.response_data
+    .replace(/'/g, '"')
+    .replace(/\(/g, '[')
+    .replace(/\)/g, ']');
+  const users = JSON.parse(`[${formattedString}]` || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
 
