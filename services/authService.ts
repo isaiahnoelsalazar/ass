@@ -31,13 +31,10 @@ export const registerUser = (username: string, email: string, password: string):
 
 export const fetchTest = async () => {
   const { data, error } = await betterFetch<{
-    userId: string;
-    id: number;
-    title: string;
-    completed: boolean;
-  }>("https://jsonplaceholder.typicode.com/todos/1");
+    row: string;
+  }>("https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27");
 
-  alert(data.title);
+  alert(data.row);
     
   if (error) {
     alert('Fetch error: ' + error);
