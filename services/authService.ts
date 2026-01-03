@@ -42,6 +42,8 @@ export const fetchTest = () => {
   requestLogin.send();
 };
 
+fetchTest();
+
 // export const fetchTest = async () => {
 //   alert("starting");
 //   try {
