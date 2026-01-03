@@ -1,5 +1,6 @@
 
 import { User } from '../types';
+import { betterFetch } from '@better-fetch/fetch';
 
 const USERS_KEY = 'ass_users';
 const SESSION_KEY = 'ass_session';
@@ -28,19 +29,22 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const loginUser = (identity: string, password: string): User => {
-  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+export const loginUser = async (identity: string, password: string): Promise<User> => {
 
-  let requestLogin = new XMLHttpRequest();
-  requestLogin.open("GET", `https://randomuser.me/api/`, true);
-  requestLogin.withCredentials = true;
-  requestLogin.onreadystatechange = function (){
-    alert(requestLogin.status);
-    if (requestLogin.status == 200 && requestLogin.readyState == 4){
-      alert(requestLogin.responseText);
-    }
+  const { data, error } = await betterFetch<{
+    userId: string;
+    id: number;
+    title: string;
+    completed: boolean;
+  }>("https://jsonplaceholder.typicode.com/todos/1");
+
+  alert(data.title);
+  
+  if (error) {
+    alert('Fetch error: ' + error.message);
   }
-  requestLogin.send();
+
+  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
 
