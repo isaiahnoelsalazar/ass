@@ -1,8 +1,8 @@
 
 import { User } from '../types';
 
-const USERS_KEY = 'as_service_users';
-const SESSION_KEY = 'as_service_session';
+const USERS_KEY = 'ass_users';
+const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
