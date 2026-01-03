@@ -4,6 +4,13 @@ import { User, ResponseData } from '../types';
 const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
+  fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
+    .then((data) => {
+      json = data;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
   let formattedString = json.response_data
     .split("),(")
     .map(tuple => {
@@ -60,15 +67,14 @@ async function fetchJson(url: string): Promise<ResponseData> {
 
 let json = null;
 
-fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
-  .then((data) => {
-    json = data;
-  })
-  .catch((error) => {
-    throw new Error(error);
-  });
-
 export const loginUser = (identity: string, password: string): User => {
+  fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
+    .then((data) => {
+      json = data;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
   let formattedString = json.response_data
     .split("),(")
     .map(tuple => {
