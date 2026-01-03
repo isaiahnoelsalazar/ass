@@ -18,6 +18,12 @@ export enum ToolType {
   IMAGE_TO_PDF = 'IMAGE_TO_PDF'
 }
 
+export interface User {
+  username: string;
+  email: string;
+  joinedAt: number;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';

@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { ToolType } from './types';
+import React, { useState, useEffect } from 'react';
+import { ToolType, User } from './types';
 import Layout from './components/Layout';
 import Dashboard from './views/Dashboard';
 import AssistantView from './views/AssistantView';
@@ -18,14 +18,40 @@ import QRGeneratorView from './views/QRGeneratorView';
 import CounterView from './views/CounterView';
 import ShoppingListView from './views/ShoppingListView';
 import ImageToPdfView from './views/ImageToPdfView';
+import AuthView from './views/AuthView';
+import { getCurrentUser, logoutUser } from './services/authService';
 
 const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'DASHBOARD'>('DASHBOARD');
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
+
+  useEffect(() => {
+    const activeUser = getCurrentUser();
+    setUser(activeUser);
+    setIsAuthLoaded(true);
+  }, []);
+
+  const handleLogin = (newUser: User) => {
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    logoutUser();
+    setUser(null);
+    setActiveTool('DASHBOARD');
+  };
+
+  if (!isAuthLoaded) return null;
+
+  if (!user) {
+    return <AuthView onLogin={handleLogin} />;
+  }
 
   const renderContent = () => {
     switch (activeTool) {
       case 'DASHBOARD':
-        return <Dashboard onToolSelect={setActiveTool} />;
+        return <Dashboard onToolSelect={setActiveTool} user={user} />;
       case ToolType.ASSISTANT:
         return <AssistantView />;
       case ToolType.RESEARCHER:
@@ -59,12 +85,12 @@ const App: React.FC = () => {
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:
-        return <Dashboard onToolSelect={setActiveTool} />;
+        return <Dashboard onToolSelect={setActiveTool} user={user} />;
     }
   };
 
   return (
-    <Layout activeTool={activeTool} onToolSelect={setActiveTool}>
+    <Layout activeTool={activeTool} onToolSelect={setActiveTool} user={user} onLogout={handleLogout}>
       {renderContent()}
     </Layout>
   );

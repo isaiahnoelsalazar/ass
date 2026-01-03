@@ -1,14 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { TOOLS } from '../constants';
-import { ToolType } from '../types';
+import { ToolType, User } from '../types';
 import { getActivities, Activity, getToolInfo, clearActivities } from '../services/activityService';
 
 interface DashboardProps {
   onToolSelect: (tool: ToolType) => void;
+  user: User;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onToolSelect }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onToolSelect, user }) => {
   const [activities, setActivities] = useState<Activity[]>([]);
 
   const loadActivities = () => {
@@ -34,7 +35,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onToolSelect }) => {
   return (
     <div className="max-w-6xl mx-auto">
       <header className="mb-10">
-        <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Welcome Back</h1>
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-widest">Active Member</span>
+          <span className="text-xs text-slate-400 font-medium">Joined {new Date(user.joinedAt).toLocaleDateString()}</span>
+        </div>
+        <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Welcome Back, {user.username}</h1>
         <p className="text-slate-500 text-lg">What would you like to build or automate today?</p>
       </header>
 
