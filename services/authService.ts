@@ -29,7 +29,7 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const loginUser = async (identity: string, password: string): Promise<User> => {
+export const loginUser = async (identity: string, password: string): Promise<any> => {
   const { data, error } = await betterFetch<{
     userId: string;
     id: number;
