@@ -14,7 +14,7 @@ const PasswordGenView: React.FC = () => {
         retVal += charset.charAt(Math.floor(Math.random() * n));
     }
     setPassword(retVal);
-    logActivity(ToolType.PASSWORD_GEN, 'Key Generated', `${passLength} characters`);
+    logActivity(ToolType.PASSWORD_GEN, 'Password Generated', `${passLength} characters`);
   };
 
   const copyToClipboard = () => {
