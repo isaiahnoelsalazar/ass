@@ -58,6 +58,7 @@ fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.
   });
 
 export const loginUser = (identity: string, password: string): User => {
+  alert(json.response_data);
   const users = JSON.parse(json.response_data || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
