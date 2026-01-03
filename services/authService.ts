@@ -29,19 +29,26 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const fetchTest = () => {
-  alert("starting");
-  let requestLogin = new XMLHttpRequest();
-  requestLogin.open("GET", `https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27`, true);
-  requestLogin.withCredentials = true;
-  requestLogin.onreadystatechange = function (){
-    let response = requestLogin.status + " " + requestLogin.readyState + " " + requestLogin.responseText;
-    alert(response);
-  }
-  requestLogin.send();
-};
+interface ResponseData {
+  response_data: string;
+}
 
-fetchTest();
+async function fetchJson(url: string): Promise<ResponseData> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Fetch failed. Dog doesn't wanna play fetch right now.");
+  }
+  const jsonData: ResponseData = await response.json();
+  return jsonData;
+}
+
+fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27")
+  .then(data => {
+    alert(data.response_data);
+  })
+  .catch(error => {
+    alert(error);
+  });
 
 // export const fetchTest = async () => {
 //   alert("starting");
