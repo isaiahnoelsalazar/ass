@@ -4,7 +4,11 @@ import { chatWithGemini } from '../services/geminiService';
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 
-type LanguageMode = 'PYTHON' | 'WEB' | 'PHP' | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' | 'SQL_SERVER' | 'SQLITE' | 'MYSQL';
+type LanguageMode = 
+  | 'PYTHON' | 'WEB' | 'PHP' | 'RUBY' 
+  | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' 
+  | 'KOTLIN' | 'RUST' | 'GO' | 'C' | 'ASSEMBLY' | 'COBOL' | 'OBJECTIVE_C' | 'SWIFT'
+  | 'SQL_SERVER' | 'SQLITE' | 'MYSQL';
 
 interface LanguageConfig {
   name: string;
@@ -35,6 +39,69 @@ const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
     isNative: false,
     category: 'Core',
     template: '<?php\n\necho "Hello from Simulated PHP!\\n";\n\n$fruits = ["Apple", "Banana", "Cherry"];\nforeach ($fruits as $fruit) {\n    echo "Fruit: $fruit\\n";\n}\n\necho "\\nCurrent server time: " . date("Y-m-d H:i:s");'
+  },
+  RUBY: {
+    name: 'Ruby',
+    icon: '💎',
+    isNative: false,
+    category: 'Core',
+    template: 'puts "Hello from Ruby!"\n\n# Calculate squares of first 5 numbers\n(1..5).each do |n|\n  puts "The square of #{n} is #{n**2}"\nend'
+  },
+  KOTLIN: {
+    name: 'Kotlin',
+    icon: '🎯',
+    isNative: false,
+    category: 'Systems',
+    template: 'fun main() {\n    val language = "Kotlin"\n    println("Hello from $language!")\n    \n    repeat(3) {\n        println("Kotlin is expressive!")\n    }\n}'
+  },
+  RUST: {
+    name: 'Rust',
+    icon: '🦀',
+    isNative: false,
+    category: 'Systems',
+    template: 'fn main() {\n    println!("Hello from Rust!");\n    \n    let vec = vec![10, 20, 30];\n    for x in vec {\n        println!("Value: {}", x);\n    }\n}'
+  },
+  GO: {
+    name: 'Go',
+    icon: '🐹',
+    isNative: false,
+    category: 'Systems',
+    template: 'package main\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n    \n    for i := 0; i < 3; i++ {\n        fmt.Printf("Tick: %d\\n", i)\n    }\n}'
+  },
+  C: {
+    name: 'C',
+    icon: '⌨️',
+    isNative: false,
+    category: 'Systems',
+    template: '#include <stdio.h>\n\nint main() {\n    printf("Hello from C!\\n");\n    int i;\n    for(i = 0; i < 4; i++) {\n        printf("Index %d\\n", i);\n    }\n    return 0;\n}'
+  },
+  ASSEMBLY: {
+    name: 'Assembly',
+    icon: '🔌',
+    isNative: false,
+    category: 'Systems',
+    template: '; x86 NASM Syntax Example\nsection .data\n    msg db \'Hello from Assembly!\', 0xA\n    len equ $ - msg\n\nsection .text\n    global _start\n\n_start:\n    mov eax, 4      ; sys_write\n    mov ebx, 1      ; stdout\n    mov ecx, msg\n    mov edx, len\n    int 0x80\n\n    mov eax, 1      ; sys_exit\n    xor ebx, ebx\n    int 0x80'
+  },
+  COBOL: {
+    name: 'COBOL',
+    icon: '📠',
+    isNative: false,
+    category: 'Systems',
+    template: '       IDENTIFICATION DIVISION.\n       PROGRAM-ID. HELLO-WORLD.\n       PROCEDURE DIVISION.\n           DISPLAY \'Hello from COBOL!\'.\n           DISPLAY \'Running on legacy virtualization.\'.\n           STOP RUN.'
+  },
+  OBJECTIVE_C: {
+    name: 'Objective-C',
+    icon: '🍎',
+    isNative: false,
+    category: 'Systems',
+    template: '#import <Foundation/Foundation.h>\n\nint main(int argc, const char * argv[]) {\n    @autoreleasepool {\n        NSLog(@"Hello from Objective-C!");\n        NSArray *langs = @[@"Objective-C", @"Swift"];\n        for (NSString *l in langs) {\n            NSLog(@"Developing for Apple: %@", l);\n        }\n    }\n    return 0;\n}'
+  },
+  SWIFT: {
+    name: 'Swift',
+    icon: '🐦',
+    isNative: false,
+    category: 'Systems',
+    template: 'print("Hello from Swift!")\n\nlet cities = ["Cupertino", "London", "Tokyo"]\nfor city in cities {\n    print("Checking weather in \\(city)...")\n}'
   },
   SQLITE: {
     name: 'SQLite',
@@ -250,37 +317,65 @@ Please help me debug or optimize this code. Provide a short explanation and the 
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-full right-0 mt-3 w-full md:w-[480px] bg-white border border-slate-100 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="absolute top-full right-0 mt-3 w-full md:w-[550px] bg-white border border-slate-100 rounded-[2rem] shadow-2xl z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
               <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-50">
-                {CATEGORIES.map(cat => (
-                  <div key={cat} className={`p-5 ${cat === 'Database' ? 'bg-slate-50/50' : ''}`}>
-                    <div className="flex items-center justify-between mb-4 px-2">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{cat}</p>
-                      {cat === 'Core' && <span className="text-[8px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">WASM</span>}
+                <div className="flex flex-col">
+                  {['Core', 'Database'].map(cat => (
+                    <div key={cat} className={`p-5 ${cat === 'Database' ? 'bg-slate-50/50 flex-1' : ''}`}>
+                      <div className="flex items-center justify-between mb-4 px-2">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{cat}</p>
+                        {cat === 'Core' && <span className="text-[8px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">WASM</span>}
+                      </div>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {(Object.keys(LANGUAGES) as LanguageMode[])
+                          .filter(k => LANGUAGES[k].category === cat)
+                          .map((langKey) => (
+                            <button
+                              key={langKey}
+                              onClick={() => changeLanguage(langKey)}
+                              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all relative group ${
+                                mode === langKey 
+                                  ? 'bg-slate-900 text-white shadow-xl' 
+                                  : 'hover:bg-white hover:shadow-sm text-slate-600'
+                              }`}
+                            >
+                              <span className="text-lg">{LANGUAGES[langKey].icon}</span>
+                              <span className="flex-1 text-left">{LANGUAGES[langKey].name}</span>
+                              {!LANGUAGES[langKey].isNative && (
+                                <span className={`text-[9px] px-1.5 py-0.5 rounded ${mode === langKey ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity'}`}>AI</span>
+                              )}
+                            </button>
+                          ))}
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      {(Object.keys(LANGUAGES) as LanguageMode[])
-                        .filter(k => LANGUAGES[k].category === cat)
-                        .map((langKey) => (
-                          <button
-                            key={langKey}
-                            onClick={() => changeLanguage(langKey)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all relative group ${
-                              mode === langKey 
-                                ? 'bg-slate-900 text-white shadow-xl' 
-                                : 'hover:bg-white hover:shadow-sm text-slate-600'
-                            }`}
-                          >
-                            <span className="text-lg">{LANGUAGES[langKey].icon}</span>
-                            <span className="flex-1 text-left">{LANGUAGES[langKey].name}</span>
-                            {!LANGUAGES[langKey].isNative && (
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded ${mode === langKey ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity'}`}>AI</span>
-                            )}
-                          </button>
-                        ))}
-                    </div>
+                  ))}
+                </div>
+                
+                <div className="p-5 bg-white">
+                  <div className="flex items-center justify-between mb-4 px-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Systems</p>
+                    <span className="text-[8px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full font-bold">VIRTUAL</span>
                   </div>
-                ))}
+                  <div className="grid grid-cols-1 gap-1.5 overflow-y-auto max-h-[400px] no-scrollbar pr-1">
+                    {(Object.keys(LANGUAGES) as LanguageMode[])
+                      .filter(k => LANGUAGES[k].category === 'Systems')
+                      .map((langKey) => (
+                        <button
+                          key={langKey}
+                          onClick={() => changeLanguage(langKey)}
+                          className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all relative group ${
+                            mode === langKey 
+                              ? 'bg-slate-900 text-white shadow-xl' 
+                              : 'hover:bg-white hover:shadow-sm text-slate-600'
+                          }`}
+                        >
+                          <span className="text-lg">{LANGUAGES[langKey].icon}</span>
+                          <span className="flex-1 text-left">{LANGUAGES[langKey].name}</span>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded ${mode === langKey ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity'}`}>AI</span>
+                        </button>
+                      ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -384,6 +479,8 @@ Please help me debug or optimize this code. Provide a short explanation and the 
           Languages marked as <span className="text-emerald-600 font-bold uppercase text-[10px]">WASM</span> run natively in your browser. All others utilize a secure <span className="text-indigo-600 font-bold uppercase text-[10px]">AI-Virtualization</span> layer to simulate execution and state management.
         </div>
       </div>
+
+      <br/>
     </div>
   );
 };
