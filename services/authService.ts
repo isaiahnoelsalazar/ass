@@ -5,9 +5,16 @@ const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
   let formattedString = json.response_data
-    .replace(/'/g, '"')
-    .replace(/\(/g, '[')
-    .replace(/\)/g, ']');
+    .split("),(")
+    .map(tuple => {
+      const values = tuple.replace(/[()']/g, "").split(", ");
+      return {
+        username: values[0],
+        password: values[1],
+        email: values[2],
+        joinedAt: Number(values[3])
+      };
+    });
   const users = JSON.parse(`[${formattedString}]` || '[]');
   
   if (users.find((u: any) => u.username === username || u.email === email)) {
@@ -63,10 +70,16 @@ fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.
 
 export const loginUser = (identity: string, password: string): User => {
   let formattedString = json.response_data
-    .replace(/'/g, '"')
-    .replace(/\(/g, '[')
-    .replace(/\)/g, ']');
-  alert(`[${formattedString}]`);
+    .split("),(")
+    .map(tuple => {
+      const values = tuple.replace(/[()']/g, "").split(", ");
+      return {
+        username: values[0],
+        password: values[1],
+        email: values[2],
+        joinedAt: Number(values[3])
+      };
+    });
   const users = JSON.parse(`[${formattedString}]` || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
