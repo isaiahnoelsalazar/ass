@@ -32,7 +32,7 @@ export const loginUser = (identity: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
   let requestLogin = new XMLHttpRequest();
-  requestLogin.open("POST", `https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27`, true);
+  requestLogin.open("GET", `https://randomuser.me/api/`, true);
   requestLogin.withCredentials = true;
   requestLogin.onreadystatechange = function (){
     alert(requestLogin.status);
