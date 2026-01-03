@@ -80,6 +80,7 @@ export const loginUser = (identity: string, password: string): User => {
         joinedAt: Number(values[3])
       };
     });
+  alert(formattedString);
   const users = JSON.parse(`"${formattedString}"` || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
