@@ -4,13 +4,6 @@ import { User, ResponseData } from '../types';
 const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
-  fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
-    .then((data) => {
-      json = data;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
   let formattedString = json.response_data
     .split("),(")
     .map(tuple => {
@@ -38,13 +31,12 @@ export const registerUser = (username: string, email: string, password: string):
   users.push(newUser);
   fetchJson(`https://flask-web-app-peach.vercel.app/mssql_execute?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&execute=INSERT%20INTO%20ASSTable%20%28username%2C%20password%2C%20email%2C%20joined%29%20VALUES%20%28%27${username}%27%2C%20%27${password}%27%2C%20%27${email}%27%2C%20%27${newUser.joinedAt}%27%29`)
     .then((data) => {
-      json = null;
+      json = data;
     })
     .catch((error) => {
       throw new Error(error);
     });
   
-  // Auto login
   const { password: _, ...userSession } = newUser;
   localStorage.setItem(SESSION_KEY, JSON.stringify(userSession));
   
@@ -67,14 +59,15 @@ async function fetchJson(url: string): Promise<ResponseData> {
 
 let json = null;
 
+fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
+  .then((data) => {
+    json = data;
+  })
+  .catch((error) => {
+    throw new Error(error);
+  });
+
 export const loginUser = (identity: string, password: string): User => {
-  fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
-    .then((data) => {
-      json = data;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
   let formattedString = json.response_data
     .split("),(")
     .map(tuple => {
@@ -96,8 +89,6 @@ export const loginUser = (identity: string, password: string): User => {
 
   const { password: _, ...userSession } = user;
   localStorage.setItem(SESSION_KEY, JSON.stringify(userSession));
-  
-  json = null;
 
   return userSession;
 };
