@@ -43,9 +43,11 @@ async function fetchJson(url: string): Promise<ResponseData> {
   return jsonData;
 }
 
-let json = await fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
+let json = null;
+
+fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20ASSTable")
   .then((data) => {
-    return data;
+    json = data;
   })
   .catch((error) => {
     throw new Error(error);
