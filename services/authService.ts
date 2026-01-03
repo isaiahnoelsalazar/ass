@@ -1,12 +1,10 @@
 
 import { User, ResponseData } from '../types';
-import { betterFetch } from '@better-fetch/fetch';
 
-const USERS_KEY = 'ass_users';
 const SESSION_KEY = 'ass_session';
 
 export const registerUser = (username: string, email: string, password: string): User => {
-  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+  const users = JSON.parse(json.response_data || '[]');
   
   if (users.find((u: any) => u.username === username || u.email === email)) {
     throw new Error('User already exists');
@@ -15,12 +13,18 @@ export const registerUser = (username: string, email: string, password: string):
   const newUser = { 
     username, 
     email, 
-    password, // In a real app, this would be hashed
+    password,
     joinedAt: Date.now() 
   };
 
   users.push(newUser);
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  fetchJson(`https://flask-web-app-peach.vercel.app/mssql_execute?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&execute=INSERT%20INTO%20ASSTable%20%28username%2C%20password%2C%20email%2C%20joined%29%20VALUES%20%28%27${username}%27%2C%20%27${password}%27%2C%20%27${email}%27%2C%20%27${newUser.joinedAt}%27%29`)
+    .then((data) => {
+      json = data;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
   
   // Auto login
   const { password: _, ...userSession } = newUser;
@@ -54,7 +58,6 @@ fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.
   });
 
 export const loginUser = (identity: string, password: string): User => {
-  alert(json.response_data);
   const users = JSON.parse(json.response_data || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
