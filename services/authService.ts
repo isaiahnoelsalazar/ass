@@ -4,6 +4,18 @@ import { User } from '../types';
 const USERS_KEY = 'ass_users';
 const SESSION_KEY = 'ass_session';
 
+function fetchURL(url: string): Promise<any> {
+	return fetch(url).then((response) => {
+    if (!response.ok) {
+      throw new Error(
+        `Fetch failed. Dog doesn't wanna play fetch right now.`
+      );
+    }
+    return response.json();
+  }).then((data) => alert(data))
+  .catch((error) => console.error('Error:', error));
+}
+
 export const registerUser = (username: string, email: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
   
@@ -31,8 +43,7 @@ export const registerUser = (username: string, email: string, password: string):
 export const loginUser = (identity: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
-  alert(localStorage.getItem(USERS_KEY));
-  alert(users);
+  const fetchedData = fetchURL("https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27");
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
 
