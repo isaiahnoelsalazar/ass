@@ -15,7 +15,7 @@ const { data, error } = await betterFetch<{
 alert(data.title);
   
 if (error) {
-  alert('Fetch error: ' + error.message);
+  alert('Fetch error: ' + error);
 }
 
 export const registerUser = (username: string, email: string, password: string): User => {
