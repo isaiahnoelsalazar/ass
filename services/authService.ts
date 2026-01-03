@@ -34,9 +34,10 @@ export const loginUser = (identity: string, password: string): User => {
   let requestLogin = new XMLHttpRequest();
   requestLogin.open("GET", `https://flask-web-app-peach.vercel.app/mssql_query?server=sql.bsite.net\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27`, true);
   requestLogin.onreadystatechange = function (){
-      if (requestLogin.status == 200 && requestLogin.readyState == 4){
-          alert(requestLogin.responseText);
-      }
+    alert(requestLogin.status);
+    if (requestLogin.status == 200 && requestLogin.readyState == 4){
+      alert(requestLogin.responseText);
+    }
   }
   requestLogin.send();
 
