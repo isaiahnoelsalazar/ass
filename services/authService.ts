@@ -13,7 +13,7 @@ function fetchURL(url: string): Promise<any> {
     }
     return response.json();
   }).then((data) => alert(data))
-  .catch((error) => console.error('Error:', error));
+  .catch((error) => alert('Error: ' + error));
 }
 
 export const registerUser = (username: string, email: string, password: string): User => {
