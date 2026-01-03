@@ -15,7 +15,7 @@ export const registerUser = (username: string, email: string, password: string):
         joinedAt: Number(values[3])
       };
     });
-  const users = JSON.parse(`[${formattedString}]` || '[]');
+  const users = JSON.parse(`"${formattedString}"` || '[]');
   
   if (users.find((u: any) => u.username === username || u.email === email)) {
     throw new Error('User already exists');
@@ -80,7 +80,7 @@ export const loginUser = (identity: string, password: string): User => {
         joinedAt: Number(values[3])
       };
     });
-  const users = JSON.parse(`[${formattedString}]` || '[]');
+  const users = JSON.parse(`"${formattedString}"` || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
 
