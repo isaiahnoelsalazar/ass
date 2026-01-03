@@ -29,7 +29,7 @@ export const registerUser = (username: string, email: string, password: string):
   return userSession;
 };
 
-export const loginUser = async (identity: string, password: string): Promise<any> => {
+export const fetchTest = async () => {
   const { data, error } = await betterFetch<{
     userId: string;
     id: number;
@@ -42,7 +42,11 @@ export const loginUser = async (identity: string, password: string): Promise<any
   if (error) {
     alert('Fetch error: ' + error);
   }
+};
 
+fetchTest();
+
+export const loginUser = (identity: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
 
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
