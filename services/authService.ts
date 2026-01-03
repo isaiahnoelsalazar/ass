@@ -30,6 +30,10 @@ export const registerUser = (username: string, email: string, password: string):
 
 export const loginUser = (identity: string, password: string): User => {
   const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+
+  alert(localStorage.getItem(USERS_KEY));
+  alert(users);
+
   const user = users.find((u: any) => (u.username === identity || u.email === identity) && u.password === password);
 
   if (!user) {
