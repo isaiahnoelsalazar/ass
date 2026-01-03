@@ -47,13 +47,21 @@ async function fetchJson(url: string): Promise<ResponseData> {
   return jsonData;
 }
 
-fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27")
+fetchJson("https://flask-web-app-peach.vercel.app/test-json")
   .then(data => {
     alert(data.response_data);
   })
   .catch(error => {
     alert(error);
   });
+
+// fetchJson("https://flask-web-app-peach.vercel.app/mssql_query?&server=sql.bsite.net\\MSSQL2016&database=saiasamazingaspsite_SampleDB&username=saiasamazingaspsite_SampleDB&password=DBSamplePW&query=SELECT%20%2A%20FROM%20INFORMATION_SCHEMA.TABLES%20WHERE%20TABLE_TYPE%3D%27BASE%20TABLE%27")
+//   .then(data => {
+//     alert(data.response_data);
+//   })
+//   .catch(error => {
+//     alert(error);
+//   });
 
 // export const fetchTest = async () => {
 //   alert("starting");
