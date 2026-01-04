@@ -560,9 +560,11 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         </div>
         <div className="text-xs text-slate-600 leading-relaxed max-w-3xl">
           <strong className="text-slate-900 block mb-1">Compute Policy:</strong> 
-          AS Service utilizes a hybrid compute model. <span className="font-black text-emerald-600">NATIVE</span> modes run strictly on your CPU using WebAssembly. <span className="font-black text-indigo-600">VIRTUAL</span> modes use low-latency AI inference to simulate architecture-specific behavior and state transitions.
+          ASS utilizes a hybrid compute model. <span className="font-black text-emerald-600">NATIVE</span> modes run strictly on your CPU using WebAssembly. <span className="font-black text-indigo-600">VIRTUAL</span> modes use low-latency AI inference to simulate architecture-specific behavior and state transitions.
         </div>
       </div>
+
+      <br/>
     </div>
   );
 };
