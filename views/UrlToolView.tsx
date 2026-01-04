@@ -8,20 +8,28 @@ const UrlToolView: React.FC = () => {
   const [output, setOutput] = useState('');
   const [mode, setMode] = useState<'ENCODE' | 'DECODE'>('ENCODE');
 
+  const rfc3986Encode = (str: string) => {
+    // encodeURIComponent misses !, ', (, ), and *
+    return encodeURIComponent(str).replace(/[!'()*]/g, (c) => {
+      return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+    });
+  };
+
   const handleProcess = () => {
     if (!input.trim()) return;
     try {
       let result = '';
       if (mode === 'ENCODE') {
-        result = encodeURIComponent(input);
+        result = rfc3986Encode(input);
         logActivity(ToolType.URL_TOOL, 'URL Encoded', input.slice(0, 30) + '...');
       } else {
+        // decodeURIComponent handles %2A etc natively
         result = decodeURIComponent(input);
         logActivity(ToolType.URL_TOOL, 'URL Decoded', input.slice(0, 30) + '...');
       }
       setOutput(result);
     } catch (err) {
-      setOutput('Error: Invalid input format for processing.');
+      setOutput('Error: Invalid input format for processing. Ensure the string is correctly percent-encoded for decoding.');
     }
   };
 
@@ -40,7 +48,7 @@ const UrlToolView: React.FC = () => {
     <div className="max-w-5xl mx-auto">
       <div className="mb-10">
         <h1 className="text-3xl font-extrabold text-slate-900 mb-1">URL Studio</h1>
-        <p className="text-slate-500">Fast, reliable character transformation for URLs and web parameters.</p>
+        <p className="text-slate-500">Fast, reliable character transformation for URLs and web parameters using strict RFC 3986 standards.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -106,8 +114,8 @@ const UrlToolView: React.FC = () => {
             <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Technical Note</h4>
             <p className="text-[11px] text-blue-700 leading-tight">
               {mode === 'ENCODE' 
-                ? 'Converts spaces to %20, ampersands to %26, etc. to prevent URL breaking.' 
-                : 'Restores encoded sequences like %20 back to readable spaces and characters.'}
+                ? 'Converts spaces to %20, * to %2A, and other symbols according to RFC 3986 standards.' 
+                : 'Restores encoded sequences like %20 and %2A back to readable characters.'}
             </p>
           </div>
         </div>
@@ -118,9 +126,9 @@ const UrlToolView: React.FC = () => {
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
           <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center text-3xl shrink-0">🔗</div>
           <div>
-            <h3 className="text-xl font-bold mb-2">Web Standard Percent-Encoding</h3>
+            <h3 className="text-xl font-bold mb-2">RFC 3986 Percent-Encoding</h3>
             <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
-              URL encoding converts characters into a format that can be transmitted over the Internet. It replaces unsafe ASCII characters with a "%" followed by two hexadecimal digits. This tool uses RFC 3986 standards for maximum compatibility with modern browsers and APIs.
+              Strict URL encoding ensures that all reserved characters, including "sub-delims" like asterisks (*), exclamation marks (!), and parentheses, are safely escaped. This prevents interpretation errors in complex URL queries and API endpoints.
             </p>
           </div>
         </div>
