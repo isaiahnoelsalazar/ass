@@ -42,7 +42,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
       <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center mb-10">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-indigo-100 mx-auto mb-4">A</div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Automatic Systems</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Automatic System Service</h1>
           <p className="text-slate-500 font-medium">Powering your digital workflow</p>
         </div>
 
@@ -119,7 +119,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
         </div>
 
         <p className="text-center text-[10px] text-slate-400 mt-10 uppercase tracking-widest font-bold">
-          &copy; 2025 Automatic System Service &bull; Privacy Secure
+          &copy; 2025 Automatic System Service &bull; Isaiah Noel Salazar
         </p>
       </div>
     </div>
