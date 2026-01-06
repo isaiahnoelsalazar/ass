@@ -122,7 +122,7 @@ except Exception as e:
       `;
       
       // const schema = pyodide.runPython(pythonScript);
-      const schema = pyodide.runPython("hello");
+      const schema = pyodide.runPython("'hello'");
 
       alert(schema);
       
