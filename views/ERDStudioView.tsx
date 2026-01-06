@@ -89,7 +89,7 @@ Input: "${textToProcess}"`,
   };
 
   const handleDBUpload = async () => {
-    const [fileHandle] = await showOpenFilePicker();  
+    const [fileHandle] = await window.showOpenFilePicker();  
     let fh = await fileHandle.getFile()
     if (!fh || !pyodide) return;
 
