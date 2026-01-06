@@ -102,7 +102,7 @@ Input: "${textToProcess}"`,
       await pyodide.loadPackage("sqlite3");
       
       // Write to Pyodide FS
-      pyodide.FS.writeFile('/input.db', uint8View);
+      pyodide.FS.writeFile('input.db', uint8View);
       
       // Extract schema using Python
       const pythonScript = `
@@ -110,7 +110,7 @@ import sqlite3
 import os
 
 try:
-    conn = sqlite3.connect('/input.db')
+    conn = sqlite3.connect('input.db')
     cursor = conn.cursor()
     cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
     tables = cursor.fetchall()
@@ -121,8 +121,8 @@ except Exception as e:
     f"ERROR: {str(e)}"
       `;
       
-      // const schema = pyodide.runPython(pythonScript);
-      const schema = pyodide.runPython("'hello'");
+      const schema = pyodide.runPython(pythonScript);
+      // const schema = pyodide.runPython("'hello'");
 
       alert(schema);
       
