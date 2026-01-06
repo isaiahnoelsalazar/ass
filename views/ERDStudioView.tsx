@@ -146,15 +146,28 @@ result
     const svgElement = diagramRef.current.querySelector('svg');
     if (!svgElement) return;
 
-    const svgData = new XMLSerializer().serializeToString(svgElement);
+    // Create a clone to modify without affecting UI
+    const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
+    
+    // Ensure dimensions are set for rasterization
+    const bbox = svgElement.getBBox();
+    const width = bbox.width + 40; // add padding
+    const height = bbox.height + 40;
+    
+    clonedSvg.setAttribute('width', width.toString());
+    clonedSvg.setAttribute('height', height.toString());
+    
+    const svgData = new XMLSerializer().serializeToString(clonedSvg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
     
     if (format === 'svg') {
-      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `erd-${fileName || 'db'}.svg`;
       link.click();
+      URL.revokeObjectURL(url);
+      setIsExportOpen(false);
       return;
     }
 
@@ -162,32 +175,41 @@ result
     const ctx = canvas.getContext('2d');
     const img = new Image();
     
-    const scale = 2; 
-    const svgRect = svgElement.getBoundingClientRect();
-    canvas.width = svgRect.width * scale;
-    canvas.height = svgRect.height * scale;
-
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
+    const scale = 2; // High resolution
+    canvas.width = width * scale;
+    canvas.height = height * scale;
 
     img.onload = () => {
       if (!ctx) return;
+      
+      // Clear and set background
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       if (format === 'jpg') {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
+      
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg', 1.0);
+      
+      const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = canvas.toDataURL(mimeType, 1.0);
+      
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = `erd-${fileName || 'db'}.${format}`;
       link.click();
+      
+      URL.revokeObjectURL(url);
+      setIsExportOpen(false);
+      logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
+    };
+    
+    img.onerror = () => {
+      setError("Failed to rasterize image. Try SVG export.");
       URL.revokeObjectURL(url);
     };
+
     img.src = url;
-    
-    logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
-    setIsExportOpen(false);
   };
 
   return (
@@ -222,7 +244,10 @@ result
                   {(['svg', 'png', 'jpg'] as const).map((fmt) => (
                     <button
                       key={fmt}
-                      onClick={() => setExportFormat(fmt)}
+                      onClick={() => {
+                        setExportFormat(fmt);
+                        // Optional: don't close immediately to let user see selection
+                      }}
                       className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${exportFormat === fmt ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'}`}
                     >
                       <span className="uppercase">{fmt}</span>
