@@ -120,8 +120,13 @@ try:
 except Exception as e:
     print(f"ERROR: {str(e)}")
       `;
+
+      const testScript = `
+import os
+print(os.path.exists('/input.db'))
+      `;
       
-      const schema = await pyodide.runPythonAsync(pythonScript);
+      const schema = await pyodide.runPythonAsync(testScript);
       
       alert(schema);
 
