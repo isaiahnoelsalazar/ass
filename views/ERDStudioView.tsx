@@ -96,7 +96,7 @@ Input: "${textToProcess}"`,
     setError(null);
     
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      let arrayBuffer = await file.arrayBuffer();
       pyodide.FS.writeFile('/input.db', new Uint8Array(arrayBuffer));
       
       await pyodide.loadPackage("sqlite3");
@@ -118,7 +118,7 @@ except Exception as e:
     f"ERROR: {str(e)}"
       `;
       
-      const schema = await pyodide.runPythonAsync(pythonScript);
+      let schema = await pyodide.runPythonAsync(pythonScript);
       
       if (schema === undefined || schema === null) {
         throw new Error("Failed to extract schema from database.");
