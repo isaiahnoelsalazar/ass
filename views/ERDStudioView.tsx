@@ -1,17 +1,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 import mermaid from 'mermaid';
 
 const ERDStudioView: React.FC = () => {
-  const [input, setInput] = useState('Create a database for a social media app with users, posts, comments, and likes.');
-  const [mermaidCode, setMermaidCode] = useState('erDiagram\n    USER ||--o{ POST : writes\n    USER ||--o{ COMMENT : makes\n    POST ||--o{ COMMENT : contains\n    USER ||--o{ LIKE : gives\n    POST ||--o{ LIKE : receives');
+  const [mermaidCode, setMermaidCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isDbLoading, setIsDbLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pyodide, setPyodide] = useState<any>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   
   const diagramRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -26,14 +26,13 @@ const ERDStudioView: React.FC = () => {
       }
     });
     
-    // Lazy load Pyodide for DB processing
     const loadPy = async () => {
       try {
         // @ts-ignore
         const py = await window.loadPyodide();
         setPyodide(py);
       } catch (err) {
-        console.error("Failed to load Pyodide for ERD extraction:", err);
+        console.error("Failed to load Pyodide:", err);
       }
     };
     loadPy();
@@ -44,32 +43,30 @@ const ERDStudioView: React.FC = () => {
       if (!diagramRef.current || !mermaidCode) return;
       try {
         setError(null);
-        diagramRef.current.innerHTML = ''; // Clear previous
+        diagramRef.current.innerHTML = ''; 
         const { svg } = await mermaid.render('erd-canvas', mermaidCode);
         diagramRef.current.innerHTML = svg;
       } catch (err) {
         console.error('Mermaid Render Error:', err);
-        setError('The generated diagram syntax is invalid. Try refining the prompt.');
+        setError('Syntax Error: The generated diagram code is invalid.');
       }
     };
     renderDiagram();
   }, [mermaidCode]);
 
-  const handleGenerate = async (rawSchema?: string) => {
-    const textToProcess = rawSchema || input;
-    if (!textToProcess.trim() || isLoading) return;
-
+  const handleGenerate = async (rawSchema: string) => {
     setIsLoading(true);
     setError(null);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Translate the following ${rawSchema ? 'SQL schema' : 'database description'} into a Mermaid erDiagram syntax for SQLite. 
-Only return the Mermaid code block starting with 'erDiagram'. Do not include markdown code block markers like \`\`\`mermaid.
-Include primary keys (PK) and foreign keys (FK). Map relationships accurately based on standard database naming conventions.
+        contents: `Translate the following SQL schema into a Mermaid erDiagram. 
+Return ONLY the code block starting with 'erDiagram'. 
+Identify relationships by foreign keys.
 
-Input: "${textToProcess}"`,
+Schema:
+"${rawSchema}"`,
         config: {
           temperature: 0.1
         }
@@ -78,11 +75,11 @@ Input: "${textToProcess}"`,
       const cleanedCode = response.text?.replace(/```mermaid/g, '').replace(/```/g, '').trim();
       if (cleanedCode) {
         setMermaidCode(cleanedCode);
-        logActivity(ToolType.ERD_STUDIO, 'Generated ERD', `Diagram created from ${rawSchema ? 'uploaded DB file' : 'text prompt'}`);
+        logActivity(ToolType.ERD_STUDIO, 'Generated ERD', `Diagram visualized for ${fileName}`);
       }
     } catch (err) {
       console.error(err);
-      setError('AI service failed to generate the diagram. Check your connection.');
+      setError('AI failed to process schema.');
     } finally {
       setIsLoading(false);
     }
@@ -92,16 +89,17 @@ Input: "${textToProcess}"`,
     const file = e.target.files?.[0];
     if (!file || !pyodide) return;
 
+    setFileName(file.name);
     setIsDbLoading(true);
     setError(null);
     
     try {
-      let arrayBuffer = await file.arrayBuffer();
-      pyodide.FS.writeFile('/input.db', new Uint8Array(arrayBuffer));
+      const buffer = await file.arrayBuffer();
+      const uint8View = new Uint8Array(buffer);
+      pyodide.FS.writeFile('/input.db', uint8View);
       
       await pyodide.loadPackage("sqlite3");
 
-      // Extract schema using Python
       const pythonScript = `
 import sqlite3
 import os
@@ -120,41 +118,66 @@ except Exception as e:
 result
       `;
       
-      let schema = await pyodide.runPythonAsync(pythonScript);
-      
-      if (schema === undefined || schema === null) {
-        throw new Error("Failed to extract schema from database.");
-      }
+      const schema = await pyodide.runPythonAsync(pythonScript);
+      if (schema.startsWith("ERROR:")) throw new Error(schema);
+      if (!schema.trim()) throw new Error("Empty database.");
 
-      if (schema.startsWith("ERROR:")) {
-        throw new Error(schema);
-      }
-      
-      if (!schema.trim()) {
-        throw new Error("No table schemas found in the database file.");
-      }
-
-      setInput(schema); // Show extracted SQL in the input area
-      handleGenerate(schema); // Send to AI
+      handleGenerate(schema);
     } catch (err: any) {
-      console.error(err);
-      setError(`Database Error: ${err.message || "Failed to parse SQLite file."}`);
+      setError(err.message || "Parse failed.");
     } finally {
       setIsDbLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const downloadSVG = () => {
+  const exportAs = async (format: 'svg' | 'png' | 'jpg') => {
     if (!diagramRef.current) return;
-    const svgData = diagramRef.current.innerHTML;
-    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'database-diagram.svg';
-    link.click();
-    logActivity(ToolType.ERD_STUDIO, 'Exported ERD', 'Downloaded SVG version of the diagram');
+    const svgElement = diagramRef.current.querySelector('svg');
+    if (!svgElement) return;
+
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    
+    if (format === 'svg') {
+      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `erd-${fileName || 'db'}.svg`;
+      link.click();
+      return;
+    }
+
+    // Raster export
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    // Set high resolution for clarity
+    const scale = 2; 
+    const svgRect = svgElement.getBoundingClientRect();
+    canvas.width = svgRect.width * scale;
+    canvas.height = svgRect.height * scale;
+
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      if (!ctx) return;
+      if (format === 'jpg') {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg', 1.0);
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `erd-${fileName || 'db'}.${format}`;
+      link.click();
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+    
+    logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
   };
 
   return (
@@ -162,120 +185,94 @@ result
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">ERD Studio</h1>
-          <p className="text-slate-500 font-medium">Architectural database design with AI-powered SQLite visualization.</p>
+          <p className="text-slate-500 font-medium italic">Upload a database to visualize structure.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <input 
-            type="file" 
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept=".db,.sqlite,.sqlite3"
-            className="hidden" 
-          />
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={!pyodide || isDbLoading || isLoading}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
-          >
-            <span>📁</span> {isDbLoading ? 'Reading DB...' : 'Upload .db file'}
-          </button>
-          <button 
-            onClick={downloadSVG}
-            disabled={!mermaidCode}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
-          >
-            <span>📥</span> Download SVG
-          </button>
-        </div>
+        
+        {mermaidCode && (
+          <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
+            <button onClick={() => exportAs('svg')} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-teal-600 transition-colors">SVG</button>
+            <div className="w-px h-4 bg-slate-200"></div>
+            <button onClick={() => exportAs('png')} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-teal-600 transition-colors">PNG</button>
+            <div className="w-px h-4 bg-slate-200"></div>
+            <button onClick={() => exportAs('jpg')} className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-teal-600 transition-colors">JPG</button>
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 min-h-[700px]">
-        {/* Input & Code Column */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-xl space-y-4">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Schema Designer</h3>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe your tables or paste SQL CREATE TABLE statements..."
-              className="w-full h-40 p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-teal-500 outline-none text-sm resize-none"
-            />
-            <button
-              onClick={() => handleGenerate()}
-              disabled={isLoading || isDbLoading || !input.trim()}
-              className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-xl shadow-teal-900/20 active:scale-[0.98] disabled:opacity-50"
+      {!mermaidCode && !isDbLoading && !isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-xl w-full text-center">
+            <div 
+              className="bg-white border-4 border-dashed border-slate-100 rounded-[3rem] p-16 hover:border-teal-400 transition-all cursor-pointer group shadow-2xl shadow-slate-200"
+              onClick={() => fileInputRef.current?.click()}
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <span className="text-lg">📊</span>
-                  <span>Generate Diagram</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          <div className="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-2xl flex-1 flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Mermaid Source</h3>
-              <span className="text-[10px] text-slate-500 font-mono">Syntax Highlighting</span>
+              <div className="w-24 h-24 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center text-5xl mx-auto mb-8 group-hover:scale-110 transition-transform shadow-inner">📁</div>
+              <h2 className="text-2xl font-black text-slate-800 mb-3">Inspect Database</h2>
+              <p className="text-slate-400 font-medium">Click to select or drag and drop your <span className="text-teal-600 font-bold">.db</span> file here to generate a visual ERD diagram.</p>
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".db,.sqlite,.sqlite3"
+                className="hidden" 
+              />
             </div>
-            
-            <textarea
-              value={mermaidCode}
-              onChange={(e) => setMermaidCode(e.target.value)}
-              className="flex-1 w-full bg-transparent font-mono text-xs text-teal-300 outline-none resize-none leading-relaxed selection:bg-teal-500/30"
-              spellCheck={false}
-            />
+            <p className="mt-8 text-[10px] font-black text-slate-400 uppercase tracking-widest">Supports Standard SQLite3 Binaries</p>
           </div>
         </div>
-
-        {/* Visualization Column */}
-        <div className="lg:col-span-8 flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200">
+      ) : (
+        <div className="flex-1 flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200 relative">
           <div className="bg-slate-50/80 backdrop-blur-sm px-8 py-4 flex items-center justify-between border-b border-slate-200">
-            <div className="flex gap-2">
-              <div className="w-3.5 h-3.5 rounded-full bg-rose-500/80 shadow-inner"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-amber-500/80 shadow-inner"></div>
-              <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/80 shadow-inner"></div>
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse"></div>
+              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{fileName || 'database.db'}</span>
             </div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Architectural Preview</span>
+            <button 
+              onClick={() => {
+                setMermaidCode('');
+                setFileName(null);
+              }}
+              className="text-[10px] font-black text-rose-500 uppercase hover:underline"
+            >
+              Close Inspector
+            </button>
           </div>
           
-          <div className="flex-1 overflow-auto bg-slate-50 p-10 flex items-center justify-center relative">
+          <div className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-10 relative">
             {error && (
-              <div className="absolute top-10 left-10 right-10 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-xs font-bold z-10 animate-in fade-in slide-in-from-top-4">
+              <div className="absolute top-10 inset-x-10 p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-xs font-bold z-10 text-center">
                 ⚠️ {error}
               </div>
             )}
             
             <div 
               ref={diagramRef}
-              className="w-full h-full flex items-center justify-center transition-opacity duration-300"
-              style={{ opacity: (isLoading || isDbLoading) ? 0.3 : 1 }}
+              className={`w-full h-full flex items-center justify-center transition-opacity duration-300 ${isLoading || isDbLoading ? 'opacity-20' : 'opacity-100'}`}
             />
 
             {(isLoading || isDbLoading) && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
+              <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
-                  <p className="text-teal-600 text-xs font-bold animate-pulse">
-                    {isDbLoading ? 'Reading Database Schema...' : 'Designing Schema Architecture...'}
+                  <p className="text-teal-600 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">
+                    {isDbLoading ? 'Extracting Schema...' : 'Architecting Diagram...'}
                   </p>
                 </div>
               </div>
             )}
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="mt-8 bg-teal-50/50 p-6 rounded-[2rem] border border-teal-100 flex items-center gap-6 shadow-sm">
-        <div className="w-14 h-14 bg-white text-teal-600 rounded-2xl flex items-center justify-center text-2xl shadow-sm shrink-0">
-          💾
+      <div className="mt-8 bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl flex flex-col md:flex-row items-center gap-8 border border-slate-800">
+        <div className="w-16 h-16 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
+          📊
         </div>
-        <div className="text-xs text-slate-600 leading-relaxed max-w-3xl">
-          <strong className="text-slate-900 block mb-1">Database Intelligence:</strong> 
-          ERD Studio now supports direct <span className="font-bold text-teal-700">SQLite file analysis</span>. Upload any valid DB file to automatically extract table definitions and visualize their relationships. All processing occurs locally in your browser via WebAssembly (Pyodide).
+        <div className="flex-1 text-center md:text-left">
+          <h4 className="font-bold text-lg mb-1">Local Processing Architecture</h4>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Your database file is processed strictly within your browser's private memory sandbox using WebAssembly. The AI only receives the table schemas to generate the visual graph, ensuring your data values remain <span className="text-teal-400 font-bold">100% private</span> and off-server.
+          </p>
         </div>
       </div>
     </div>
