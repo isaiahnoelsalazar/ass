@@ -106,16 +106,18 @@ Input: "${textToProcess}"`,
 import sqlite3
 import os
 
+result = ""
 try:
     conn = sqlite3.connect('/input.db')
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
-    schema = "\\n".join([t[0] for t in tables if t[0]])
+    result = "\\n".join([t[0] for t in tables if t[0]])
     conn.close()
-    schema
 except Exception as e:
-    f"ERROR: {str(e)}"
+    result = f"ERROR: {str(e)}"
+
+result
       `;
       
       let schema = await pyodide.runPythonAsync(pythonScript);
