@@ -150,18 +150,18 @@ result
     const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
     const bbox = svgElement.getBBox();
     
-    // Ensure accurate sizing with padding
     const padding = 40;
     const width = bbox.width + padding * 2;
     const height = bbox.height + padding * 2;
     
+    // Explicitly set dimensions and namespaces (required for Canvas)
     clonedSvg.setAttribute('width', width.toString());
     clonedSvg.setAttribute('height', height.toString());
     clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`);
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 
-    // 2. Inline necessary styles
-    // Mermaid renders with its own style block inside the SVG - we must preserve this
+    // 2. Inline Styles
     const styleTags = svgElement.querySelectorAll('style');
     styleTags.forEach(style => {
       const clonedStyle = style.cloneNode(true);
@@ -169,25 +169,28 @@ result
     });
 
     const svgData = new XMLSerializer().serializeToString(clonedSvg);
-    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-    const url = URL.createObjectURL(svgBlob);
-    
+
+    // --- SVG DOWNLOAD PATH ---
     if (format === 'svg') {
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `erd-${fileName || 'db'}.svg`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       URL.revokeObjectURL(url);
       setIsExportOpen(false);
       return;
     }
 
-    // 3. Rasterization Pipeline
+    // --- RASTERIZATION PATH (PNG/JPG) ---
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d', { alpha: format === 'png' });
+    const ctx = canvas.getContext('2d');
     const img = new Image();
-    
-    // Scale for high resolution (Retina)
+
+    // Scale for high resolution
     const scale = 2; 
     canvas.width = width * scale;
     canvas.height = height * scale;
@@ -203,6 +206,7 @@ result
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       
+      // Draw image to canvas with scaling
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       
       const mimeType = format === 'png' ? 'image/png' : 'image/jpeg';
@@ -211,21 +215,29 @@ result
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = `erd-${fileName || 'db'}.${format}`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
       
-      URL.revokeObjectURL(url);
       setIsExportOpen(false);
-      logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
+      if (typeof logActivity === 'function') {
+        logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
+      }
     };
     
     img.onerror = (e) => {
       console.error("Rasterization error:", e);
-      setError("Failed to generate image. Please try SVG format instead.");
-      URL.revokeObjectURL(url);
+      setError?.("Failed to generate image. Please try SVG format instead.");
       setIsExportOpen(false);
     };
 
-    img.src = url;
+    /**
+     * CRITICAL FIX: Encode SVG data to Base64. 
+     * Browsers often block Blob URLs when drawing to Canvas for security, 
+     * but Data URIs are generally treated as "clean" sources.
+     */
+    const encodedData = window.btoa(unescape(encodeURIComponent(svgData)));
+    img.src = `data:image/svg+xml;base64,${encodedData}`;
   };
 
   return (
