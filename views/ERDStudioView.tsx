@@ -99,7 +99,7 @@ Input: "${textToProcess}"`,
       await pyodide.loadPackage("sqlite3");
 
       // Write to Pyodide FS
-      pyodide.FS.writeFile('/input.db', file.getFile());
+      pyodide.FS.writeFile('/input.db', file);
       
       // Extract schema using Python
       const pythonScript = `
