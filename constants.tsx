@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.ERD_STUDIO,
+    name: 'ERD Studio',
+    description: 'Generate professional SQLite Entity Relationship Diagrams from descriptions or SQL code.',
+    icon: '📊',
+    color: 'bg-teal-600',
+  },
+  {
     id: ToolType.WEBSITE_BUILDER,
     name: 'Website Builder',
     description: 'Describe your vision and watch AI build a responsive HTML/CSS/JS website in seconds.',
