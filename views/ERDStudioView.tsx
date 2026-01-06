@@ -96,13 +96,10 @@ Input: "${textToProcess}"`,
     setError(null);
     
     try {
-      const buffer = await file.arrayBuffer();
-      const uint8View = new Uint8Array(buffer);
-      
-      pyodide.loadPackage("sqlite3");
-      
+      await pyodide.loadPackage("sqlite3");
+
       // Write to Pyodide FS
-      pyodide.FS.writeFile('input.db', uint8View);
+      pyodide.FS.writeFile('/input.db', file.getFile());
       
       // Extract schema using Python
       const pythonScript = `
@@ -110,7 +107,7 @@ import sqlite3
 import os
 
 try:
-    conn = sqlite3.connect('input.db')
+    conn = sqlite3.connect('/input.db')
     cursor = conn.cursor()
     cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
     tables = cursor.fetchall()
@@ -121,13 +118,7 @@ except Exception as e:
     f"ERROR: {str(e)}"
       `;
       
-      // const schema = pyodide.runPython(pythonScript);
-      const schema = pyodide.runPython(`
-        import importlib.util
-        importlib.util.find_spec('sqlite3')
-        `);
-
-      alert(schema);
+      const schema = await pyodide.runPythonAsync(pythonScript);
       
       if (schema === undefined || schema === null) {
         throw new Error("Failed to extract schema from database.");
