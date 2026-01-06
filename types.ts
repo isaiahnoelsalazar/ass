@@ -16,7 +16,8 @@ export enum ToolType {
   SIMPLE_COUNTER = 'SIMPLE_COUNTER',
   SHOPPING_LIST = 'SHOPPING_LIST',
   IMAGE_TO_PDF = 'IMAGE_TO_PDF',
-  URL_TOOL = 'URL_TOOL'
+  URL_TOOL = 'URL_TOOL',
+  WEBSITE_BUILDER = 'WEBSITE_BUILDER'
 }
 
 export interface ResponseData {

@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.WEBSITE_BUILDER,
+    name: 'Website Builder',
+    description: 'Describe your vision and watch AI build a responsive HTML/CSS/JS website in seconds.',
+    icon: '🏗️',
+    color: 'bg-indigo-700',
+  },
+  {
     id: ToolType.URL_TOOL,
     name: 'URL Studio',
     description: 'Encode or decode special characters in strings to make them URL-safe.',

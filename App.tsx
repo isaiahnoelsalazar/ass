@@ -20,6 +20,7 @@ import ShoppingListView from './views/ShoppingListView';
 import ImageToPdfView from './views/ImageToPdfView';
 import AuthView from './views/AuthView';
 import UrlToolView from './views/UrlToolView';
+import WebsiteBuilderView from './views/WebsiteBuilderView';
 import { getCurrentUser, logoutUser } from './services/authService';
 
 const App: React.FC = () => {
@@ -85,6 +86,8 @@ const App: React.FC = () => {
         return <ImageToPdfView />;
       case ToolType.URL_TOOL:
         return <UrlToolView />;
+      case ToolType.WEBSITE_BUILDER:
+        return <WebsiteBuilderView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:
