@@ -116,9 +116,9 @@ try:
     tables = cursor.fetchall()
     schema = "\\n".join([t[0] for t in tables if t[0]])
     conn.close()
-    print(schema)
+    schema
 except Exception as e:
-    print(f"ERROR: {str(e)}")
+    f"ERROR: {str(e)}"
       `;
       
       const schema = await pyodide.runPythonAsync(pythonScript);
