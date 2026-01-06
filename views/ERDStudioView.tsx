@@ -109,22 +109,22 @@ Input: "${textToProcess}"`,
 import sqlite3
 import os
 
-if os.path.exists('/input.db'):
-    try:
-        conn = sqlite3.connect('/input.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-        tables = cursor.fetchall()
-        schema = "\\n".join([t[0] for t in tables if t[0]])
-        conn.close()
-        schema
-    except Exception as e:
-        f"ERROR: {str(e)}"
-else:
-    "ERROR: Database file not found."
+try:
+    conn = sqlite3.connect('/input.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    tables = cursor.fetchall()
+    schema = "\\n".join([t[0] for t in tables if t[0]])
+    conn.close()
+    schema
+except Exception as e:
+    f"ERROR: {str(e)}"
       `;
       
-      const schema = pyodide.runPython(pythonScript);
+      // const schema = pyodide.runPython(pythonScript);
+      const schema = pyodide.runPython("hello");
+
+      alert(schema);
       
       if (schema === undefined || schema === null) {
         throw new Error("Failed to extract schema from database.");
