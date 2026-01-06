@@ -99,7 +99,7 @@ Input: "${textToProcess}"`,
       const buffer = await file.arrayBuffer();
       const uint8View = new Uint8Array(buffer);
       
-      await pyodide.loadPackage("sqlite3");
+      pyodide.loadPackage("sqlite3");
       
       // Write to Pyodide FS
       pyodide.FS.writeFile('input.db', uint8View);
@@ -121,8 +121,11 @@ except Exception as e:
     f"ERROR: {str(e)}"
       `;
       
-      const schema = pyodide.runPython(pythonScript);
-      // const schema = pyodide.runPython("'hello'");
+      // const schema = pyodide.runPython(pythonScript);
+      const schema = pyodide.runPython(`
+        import importlib.util
+        importlib.util.find_spec('sqlite3')
+        `);
 
       alert(schema);
       
