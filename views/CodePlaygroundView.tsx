@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { chatWithGemini } from '../services/geminiService';
 import { logActivity } from '../services/activityService';
 import { ToolType } from '../types';
 
 type LanguageMode = 
-  | 'PYTHON' | 'WEB' | 'PHP' | 'RUBY' | 'LUA'
+  | 'PYTHON' | 'WEB' | 'MARKDOWN' | 'PHP' | 'RUBY' | 'LUA'
   | 'CPP' | 'JAVA' | 'CSHARP' | 'PASCAL' | 'BASIC' 
   | 'KOTLIN' | 'RUST' | 'GO' | 'C' | 'ASSEMBLY' | 'COBOL' | 'OBJECTIVE_C' | 'SWIFT'
   | 'SQL_SERVER' | 'SQLITE' | 'MYSQL' | 'MONGODB' | 'NOSQL' | 'ORACLE';
@@ -36,6 +36,14 @@ const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
     description: 'Front-end development environment with live rendering.',
     template: '<div style="text-align: center; margin-top: 50px; font-family: sans-serif;">\n  <h1 style="color: #6366f1;">Hello Web!</h1>\n  <p>Edit this HTML to see live updates.</p>\n  <button onclick="alert(\'Clicked!\')">Click Me</button>\n</div>'
   },
+  MARKDOWN: {
+    name: 'Markdown',
+    icon: 'Ⓜ️',
+    isNative: true,
+    category: 'Core',
+    description: 'Lightweight markup language for documentation and notes.',
+    template: '# Welcome to Markdown\n\nThis is a live **Markdown** previewer.\n\n### Quick Features:\n- **Bold** and *Italic* text\n- [Link to ASS](https://example.com)\n- `Inline Code Blocks` \n\n```javascript\nconsole.log("Hello Code Blocks!");\n```\n\n> "Markdown is the language of the modern web."\n\n- [ ] Task checkbox\n- [x] Completed task'
+  },
   PHP: {
     name: 'PHP',
     icon: '🐘',
@@ -58,7 +66,7 @@ const LANGUAGES: Record<LanguageMode, LanguageConfig> = {
     isNative: false,
     category: 'Core',
     description: 'Lightweight, high-level, multi-paradigm programming language.',
-    template: '-- Hello from Lua!\nprint("Hello World from the Moon!")\n\nlocal fruits = {"Apple", "Banana", "Orange"}\n\nfor i, fruit in ipairs(fruits) do\n    print("Fruit #" .. i .. ": " .. fruit)\nend\n\nfunction greet(name)\n    return "Welcome to AS Service, " .. name\nend\n\nprint(greet("Developer"))'
+    template: '-- Hello from Lua!\nprint("Hello World from the Moon!")\n\nlocal fruits = {"Apple", "Banana", "Orange"}\n\nfor i, fruit in ipairs(fruits) do\n    print("Fruit #" .. i .. ": " .. fruit)\nend\n\nfunction greet(name)\n    return "Welcome to ASS, " .. name\nend\n\nprint(greet("Developer"))'
   },
   KOTLIN: {
     name: 'Kotlin',
@@ -230,6 +238,15 @@ const CodePlaygroundView: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Stats calculation
+  const stats = useMemo(() => {
+    const charCount = code.length;
+    const lineCount = code.split('\n').length;
+    // Heuristic: 1 token is roughly 4 characters for code/English
+    const tokenEstimate = Math.ceil(charCount / 4);
+    return { charCount, lineCount, tokenEstimate };
+  }, [code]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -272,15 +289,51 @@ const CodePlaygroundView: React.FC = () => {
     }
   }, [mode, pyodide]);
 
+  // Live Preview Logic for WEB and MARKDOWN
   useEffect(() => {
-    if (mode === 'WEB' && iframeRef.current) {
-      const doc = iframeRef.current.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(code);
-        doc.close();
+    const renderPreview = async () => {
+      if ((mode === 'WEB' || mode === 'MARKDOWN') && iframeRef.current) {
+        const doc = iframeRef.current.contentDocument;
+        if (doc) {
+          doc.open();
+          if (mode === 'MARKDOWN') {
+            try {
+              // @ts-ignore
+              const { marked } = await import('marked');
+              const html = await marked.parse(code);
+              const styles = `
+                <style>
+                  body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+                  h1 { font-weight: 800; font-size: 2.25rem; margin-bottom: 1.5rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem; }
+                  h2 { font-weight: 700; margin-top: 2rem; color: #334155; }
+                  code { background: #f1f5f9; padding: 0.2rem 0.4rem; rounded: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.875em; }
+                  pre { background: #1e293b; color: #f8fafc; padding: 1.5rem; border-radius: 1rem; overflow-x: auto; margin: 1.5rem 0; }
+                  pre code { background: transparent; padding: 0; color: inherit; }
+                  blockquote { border-left: 4px solid #6366f1; padding-left: 1.5rem; color: #64748b; font-style: italic; margin: 2rem 0; }
+                  ul, ol { margin: 1rem 0; padding-left: 1.5rem; }
+                  li { margin-bottom: 0.5rem; }
+                  a { color: #6366f1; text-decoration: none; font-weight: 600; }
+                  a:hover { text-decoration: underline; }
+                  table { width: 100%; border-collapse: collapse; margin: 2rem 0; }
+                  th, td { border: 1px solid #e2e8f0; padding: 0.75rem; text-align: left; }
+                  th { background: #f8fafc; font-weight: 700; }
+                </style>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+              `;
+              doc.write(styles + html);
+            } catch (err) {
+              doc.write(`<p style="color:red">Renderer Error: Failed to load Markdown parser.</p>`);
+            }
+          } else {
+            doc.write(code);
+          }
+          doc.close();
+        }
       }
-    }
+    };
+    renderPreview();
   }, [code, mode]);
 
   const runCode = async () => {
@@ -362,6 +415,8 @@ Please help me debug or optimize this code. Provide a short explanation and the 
     LANGUAGES[key].name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     LANGUAGES[key].category.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const isPreviewMode = mode === 'WEB' || mode === 'MARKDOWN';
 
   return (
     <div className="max-w-6xl mx-auto h-full flex flex-col px-4 pb-10">
@@ -478,15 +533,35 @@ Please help me debug or optimize this code. Provide a short explanation and the 
               {isRunning && <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>}
             </div>
           </div>
-          <textarea
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="flex-1 w-full p-10 bg-slate-900 text-indigo-200 font-mono text-sm leading-relaxed outline-none resize-none selection:bg-indigo-500/30"
-            spellCheck={false}
-          />
+          <div className="flex-1 relative">
+            <textarea
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full h-full p-10 bg-slate-900 text-indigo-200 font-mono text-sm leading-relaxed outline-none resize-none selection:bg-indigo-500/30"
+              spellCheck={false}
+            />
+            
+            {/* Token & Stats Counter */}
+            <div className="absolute bottom-4 right-8 flex items-center gap-6 px-4 py-2 bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl text-[10px] font-bold font-mono text-slate-400 shadow-lg select-none">
+              <div className="flex items-center gap-2">
+                <span className="opacity-50 uppercase">Lines</span>
+                <span className="text-indigo-400">{stats.lineCount}</span>
+              </div>
+              <div className="w-px h-3 bg-slate-700"></div>
+              <div className="flex items-center gap-2">
+                <span className="opacity-50 uppercase">Chars</span>
+                <span className="text-indigo-400">{stats.charCount}</span>
+              </div>
+              <div className="w-px h-3 bg-slate-700"></div>
+              <div className="flex items-center gap-2">
+                <span className="opacity-50 uppercase">Tokens</span>
+                <span className="text-emerald-400">~{stats.tokenEstimate}</span>
+              </div>
+            </div>
+          </div>
           
           <div className="p-6 bg-slate-800/50 backdrop-blur-md flex flex-col sm:flex-row gap-4 border-t border-slate-700">
-            {mode !== 'WEB' && (
+            {!isPreviewMode && (
               <button
                 onClick={runCode}
                 disabled={isRunning || (mode === 'PYTHON' && isPyodideLoading)}
@@ -505,7 +580,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
             <button
               onClick={askAIForHelp}
               disabled={isRunning}
-              className="flex-1 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/40 active:scale-[0.98] disabled:opacity-50"
+              className={`py-4 ${isPreviewMode ? 'w-full' : 'flex-1'} bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-900/40 active:scale-[0.98] disabled:opacity-50`}
             >
               <span className="text-lg">✨</span>
               <span>AI Debugger</span>
@@ -517,9 +592,9 @@ Please help me debug or optimize this code. Provide a short explanation and the 
         <div className="flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200">
           <div className="bg-slate-50/80 backdrop-blur-sm px-8 py-4 flex items-center justify-between border-b border-slate-200">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              {mode === 'WEB' ? 'Interactive Render' : 'Virtual Console'}
+              {isPreviewMode ? 'Interactive Render' : 'Virtual Console'}
             </span>
-            {mode !== 'WEB' && (
+            {!isPreviewMode && (
               <button 
                 onClick={() => setOutput('')}
                 className="text-[10px] font-black text-slate-400 hover:text-rose-500 transition-colors uppercase flex items-center gap-1.5"
@@ -531,7 +606,7 @@ Please help me debug or optimize this code. Provide a short explanation and the 
           </div>
           
           <div className="flex-1 overflow-auto bg-slate-50 relative group">
-            {mode === 'WEB' ? (
+            {isPreviewMode ? (
               <iframe 
                 ref={iframeRef}
                 title="preview"
