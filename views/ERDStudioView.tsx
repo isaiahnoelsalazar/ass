@@ -121,8 +121,12 @@ except Exception as e:
     f"ERROR: {str(e)}"
       `;
       
-      const schema = await pyodide.runPythonAsync(pythonScript);
+      const schema = pyodide.runPython(pythonScript);
       
+      if (schema === undefined || schema === null) {
+        throw new Error("Failed to extract schema from database.");
+      }
+
       if (schema.startsWith("ERROR:")) {
         throw new Error(schema);
       }
