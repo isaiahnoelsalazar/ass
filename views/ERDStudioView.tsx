@@ -99,6 +99,8 @@ Input: "${textToProcess}"`,
       const buffer = await file.arrayBuffer();
       const uint8View = new Uint8Array(buffer);
       
+      pyodide.pyimport("sqlite3");
+      
       // Write to Pyodide FS
       pyodide.FS.writeFile('/input.db', uint8View);
       
