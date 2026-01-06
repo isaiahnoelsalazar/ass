@@ -116,20 +116,13 @@ try:
     tables = cursor.fetchall()
     schema = "\\n".join([t[0] for t in tables if t[0]])
     conn.close()
-    print(schema)
+    schema
 except Exception as e:
-    print(f"ERROR: {str(e)}")
-      `;
-
-      const testScript = `
-import os
-os.path.exists('/input.db')
+    f"ERROR: {str(e)}"
       `;
       
-      const schema = await pyodide.runPythonAsync(testScript);
+      const schema = await pyodide.runPythonAsync(pythonScript);
       
-      alert(schema);
-
       if (schema.startsWith("ERROR:")) {
         throw new Error(schema);
       }
