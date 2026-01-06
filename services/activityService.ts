@@ -10,7 +10,7 @@ export interface Activity {
   timestamp: number;
 }
 
-const STORAGE_KEY = 'as_service_activities';
+const STORAGE_KEY = 'ass_activities';
 
 export const getActivities = (): Activity[] => {
   const data = localStorage.getItem(STORAGE_KEY);

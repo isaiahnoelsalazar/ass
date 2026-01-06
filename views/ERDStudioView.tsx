@@ -123,7 +123,7 @@ except Exception as e:
 
       const testScript = `
 import os
-print(os.path.exists('/input.db'))
+os.path.exists('/input.db')
       `;
       
       const schema = await pyodide.runPythonAsync(testScript);
