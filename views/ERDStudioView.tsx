@@ -88,62 +88,6 @@ Input: "${textToProcess}"`,
     }
   };
 
-  const handleDBUpload = async () => {
-    const [fileHandle] = await window.showOpenFilePicker();  
-    let fh = await fileHandle.getFile()
-    if (!fh || !pyodide) return;
-
-    setIsDbLoading(true);
-    setError(null);
-    
-    try {
-      await pyodide.loadPackage("sqlite3");
-
-      // Write to Pyodide FS
-      pyodide.FS.writeFile('/input.db', fh);
-      
-      // Extract schema using Python
-      const pythonScript = `
-import sqlite3
-import os
-
-try:
-    conn = sqlite3.connect('/input.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-    tables = cursor.fetchall()
-    schema = "\\n".join([t[0] for t in tables if t[0]])
-    conn.close()
-    schema
-except Exception as e:
-    f"ERROR: {str(e)}"
-      `;
-      
-      const schema = await pyodide.runPythonAsync(pythonScript);
-      
-      if (schema === undefined || schema === null) {
-        throw new Error("Failed to extract schema from database.");
-      }
-
-      if (schema.startsWith("ERROR:")) {
-        throw new Error(schema);
-      }
-      
-      if (!schema.trim()) {
-        throw new Error("No table schemas found in the database file.");
-      }
-
-      setInput(schema); // Show extracted SQL in the input area
-      handleGenerate(schema); // Send to AI
-    } catch (err: any) {
-      console.error(err);
-      setError(`Database Error: ${err.message || "Failed to parse SQLite file."}`);
-    } finally {
-      setIsDbLoading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !pyodide) return;
@@ -152,11 +96,11 @@ except Exception as e:
     setError(null);
     
     try {
+      const arrayBuffer = await file.arrayBuffer();
+      pyodide.FS.writeFile('/input.db', new Uint8Array(arrayBuffer));
+      
       await pyodide.loadPackage("sqlite3");
 
-      // Write to Pyodide FS
-      pyodide.FS.writeFile('/input.db', file);
-      
       // Extract schema using Python
       const pythonScript = `
 import sqlite3
@@ -165,7 +109,7 @@ import os
 try:
     conn = sqlite3.connect('/input.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
     tables = cursor.fetchall()
     schema = "\\n".join([t[0] for t in tables if t[0]])
     conn.close()
@@ -227,8 +171,7 @@ except Exception as e:
             className="hidden" 
           />
           <button 
-            // onClick={() => fileInputRef.current?.click()}
-            onClick={handleDBUpload}
+            onClick={() => fileInputRef.current?.click()}
             disabled={!pyodide || isDbLoading || isLoading}
             className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
           >
