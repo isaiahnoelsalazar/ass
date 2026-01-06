@@ -146,17 +146,28 @@ result
     const svgElement = diagramRef.current.querySelector('svg');
     if (!svgElement) return;
 
-    // Create a clone to modify without affecting UI
+    // 1. Prepare SVG Clone for high-fidelity capture
     const clonedSvg = svgElement.cloneNode(true) as SVGSVGElement;
-    
-    // Ensure dimensions are set for rasterization
     const bbox = svgElement.getBBox();
-    const width = bbox.width + 40; // add padding
-    const height = bbox.height + 40;
+    
+    // Ensure accurate sizing with padding
+    const padding = 40;
+    const width = bbox.width + padding * 2;
+    const height = bbox.height + padding * 2;
     
     clonedSvg.setAttribute('width', width.toString());
     clonedSvg.setAttribute('height', height.toString());
-    
+    clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width} ${height}`);
+    clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    // 2. Inline necessary styles
+    // Mermaid renders with its own style block inside the SVG - we must preserve this
+    const styleTags = svgElement.querySelectorAll('style');
+    styleTags.forEach(style => {
+      const clonedStyle = style.cloneNode(true);
+      clonedSvg.prepend(clonedStyle);
+    });
+
     const svgData = new XMLSerializer().serializeToString(clonedSvg);
     const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
@@ -171,22 +182,25 @@ result
       return;
     }
 
+    // 3. Rasterization Pipeline
     const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: format === 'png' });
     const img = new Image();
     
-    const scale = 2; // High resolution
+    // Scale for high resolution (Retina)
+    const scale = 2; 
     canvas.width = width * scale;
     canvas.height = height * scale;
 
     img.onload = () => {
       if (!ctx) return;
       
-      // Clear and set background
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Background handling
       if (format === 'jpg') {
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
       
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -204,9 +218,11 @@ result
       logActivity(ToolType.ERD_STUDIO, 'Exported ERD', `Downloaded as ${format.toUpperCase()}`);
     };
     
-    img.onerror = () => {
-      setError("Failed to rasterize image. Try SVG export.");
+    img.onerror = (e) => {
+      console.error("Rasterization error:", e);
+      setError("Failed to generate image. Please try SVG format instead.");
       URL.revokeObjectURL(url);
+      setIsExportOpen(false);
     };
 
     img.src = url;
@@ -244,10 +260,7 @@ result
                   {(['svg', 'png', 'jpg'] as const).map((fmt) => (
                     <button
                       key={fmt}
-                      onClick={() => {
-                        setExportFormat(fmt);
-                        // Optional: don't close immediately to let user see selection
-                      }}
+                      onClick={() => setExportFormat(fmt)}
                       className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-between transition-colors ${exportFormat === fmt ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50'}`}
                     >
                       <span className="uppercase">{fmt}</span>
@@ -282,7 +295,7 @@ result
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200 relative group">
+        <div className="flex-1 flex flex-col bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200 relative group min-h-[900px]">
           {/* Studio Bar */}
           <div className="bg-slate-900 px-8 py-3 flex items-center justify-between border-b border-slate-800">
             <div className="flex items-center gap-4">
@@ -297,7 +310,7 @@ result
             <div className="flex items-center gap-4">
               {mermaidCode && !isLoading && (
                 <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                  Ready
+                  Live View
                 </span>
               )}
               <button 
@@ -315,8 +328,8 @@ result
           <div 
             className="flex-1 overflow-auto bg-slate-50 flex items-center justify-center p-12 relative"
             style={{ 
-              backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', 
-              backgroundSize: '32px 32px' 
+              backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)', 
+              backgroundSize: '24px 24px' 
             }}
           >
             {error && (
@@ -336,9 +349,9 @@ result
                   <div className="w-16 h-16 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin"></div>
                   <div className="text-center">
                     <p className="text-slate-900 text-sm font-black uppercase tracking-[0.2em] mb-1">
-                      {isDbLoading ? 'Extracting Schema' : 'Drafting Architecture'}
+                      {isDbLoading ? 'Analyzing Binary' : 'Generating Graph'}
                     </p>
-                    <p className="text-slate-400 text-[10px] font-bold animate-pulse">Processing locally with WebAssembly...</p>
+                    <p className="text-slate-400 text-[10px] font-bold animate-pulse">Running Pyodide Engine...</p>
                   </div>
                 </div>
               </div>
@@ -349,11 +362,11 @@ result
           {mermaidCode && (
             <div className="absolute bottom-6 right-6 px-4 py-2 bg-white/80 backdrop-blur-md border border-slate-200 rounded-xl shadow-lg flex items-center gap-4 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <span className="text-teal-500">Scale</span> Automatic
+                  <span className="text-teal-500">Render</span> 2.0x DPI
                </div>
                <div className="w-px h-3 bg-slate-200"></div>
                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <span className="text-teal-500">Engine</span> Mermaid
+                  <span className="text-teal-500">Engine</span> Mermaid WASM
                </div>
             </div>
           )}
@@ -361,13 +374,13 @@ result
       )}
 
       <div className="mt-8 bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-xl flex flex-col md:flex-row items-center gap-8 border border-slate-800">
-        <div className="w-16 h-16 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 animate-pulse">
+        <div className="w-16 h-16 bg-teal-500/20 text-teal-400 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0">
           🛡️
         </div>
         <div className="flex-1 text-center md:text-left">
-          <h4 className="font-bold text-lg mb-1 tracking-tight">Enterprise Privacy by Design</h4>
+          <h4 className="font-bold text-lg mb-1 tracking-tight">Enterprise Privacy Sandbox</h4>
           <p className="text-xs text-slate-400 leading-relaxed">
-            Your binary database never leaves your device. We use <span className="text-teal-400 font-bold">Pyodide WebAssembly</span> to run a Python interpreter in your browser thread, ensuring full data isolation. Only structural metadata is shared with the AI visualizer.
+            Your binary database never leaves your device. We use <span className="text-teal-400 font-bold">Pyodide WebAssembly</span> to run a Python interpreter in your browser thread, ensuring full data isolation. Only structural metadata is shared with the AI visualizer for diagram generation.
           </p>
         </div>
       </div>
