@@ -119,7 +119,7 @@ result = ""
 try:
     conn = sqlite3.connect('/input.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
     tables = cursor.fetchall()
     result = "\\n".join([t[0] for t in tables if t[0]])
     conn.close()
