@@ -74,7 +74,7 @@ const ERDStudioView: React.FC = () => {
         model: 'gemini-3-flash-preview',
         contents: `Translate the following SQL schema into a Mermaid erDiagram. 
 Return ONLY the code block starting with 'erDiagram'. 
-Identify relationships by foreign keys. Complete the table structures as needed.
+Identify relationships by foreign keys. Complete the table structures as needed even if it is too long.
 
 Schema:
 "${rawSchema}"`,
