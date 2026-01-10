@@ -18,7 +18,8 @@ export enum ToolType {
   IMAGE_TO_PDF = 'IMAGE_TO_PDF',
   URL_TOOL = 'URL_TOOL',
   WEBSITE_BUILDER = 'WEBSITE_BUILDER',
-  ERD_STUDIO = 'ERD_STUDIO'
+  ERD_STUDIO = 'ERD_STUDIO',
+  TYPING_TESTER = 'TYPING_TESTER'
 }
 
 export interface ResponseData {

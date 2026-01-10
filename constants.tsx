@@ -11,6 +11,13 @@ export const TOOLS: Tool[] = [
     color: 'bg-indigo-500',
   },
   {
+    id: ToolType.TYPING_TESTER,
+    name: 'Typing Speed Lab',
+    description: 'Measure your words per minute and accuracy with real-time feedback and AI challenges.',
+    icon: '⌨️',
+    color: 'bg-amber-600',
+  },
+  {
     id: ToolType.ERD_STUDIO,
     name: 'ERD Studio',
     description: 'Generate professional SQLite Entity Relationship Diagrams from descriptions or SQL code.',

@@ -22,6 +22,7 @@ import AuthView from './views/AuthView';
 import UrlToolView from './views/UrlToolView';
 import WebsiteBuilderView from './views/WebsiteBuilderView';
 import ERDStudioView from './views/ERDStudioView';
+import TypingTesterView from './views/TypingTesterView';
 import { getCurrentUser, logoutUser } from './services/authService';
 
 const App: React.FC = () => {
@@ -91,6 +92,8 @@ const App: React.FC = () => {
         return <WebsiteBuilderView />;
       case ToolType.ERD_STUDIO:
         return <ERDStudioView />;
+      case ToolType.TYPING_TESTER:
+        return <TypingTesterView />;
       case ToolType.CODE_HELPER:
         return <AssistantView />;
       default:
@@ -100,6 +103,7 @@ const App: React.FC = () => {
 
   return (
     <Layout activeTool={activeTool} onToolSelect={setActiveTool} user={user} onLogout={handleLogout}>
+      {/* Fixed: removed reference to undefined 'children' variable */}
       {renderContent()}
     </Layout>
   );
