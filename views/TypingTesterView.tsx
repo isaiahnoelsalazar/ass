@@ -152,7 +152,7 @@ const TypingTesterView: React.FC = () => {
       </div>
 
       {/* Stats Display */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl flex flex-col items-center justify-center">
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Speed</span>
           <div className="flex items-baseline gap-2">
@@ -180,12 +180,26 @@ const TypingTesterView: React.FC = () => {
         </div>
       </div>
 
+      {/* Action Indicator / Tooltip Section */}
+      <div className="h-12 flex items-center justify-center mb-2">
+        {!startTime && !endTime && (
+          <div className="flex items-center gap-3 px-6 py-2 bg-amber-50 border border-amber-100 rounded-full text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] animate-bounce shadow-sm">
+            <span className="text-lg">⌨️</span> Start typing to begin...
+          </div>
+        )}
+        {startTime && !endTime && (
+          <div className="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> Recording Performance...
+          </div>
+        )}
+      </div>
+
       {/* Typing Workspace */}
       <div 
-        className="flex-1 bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-12 relative cursor-text group"
+        className="flex-1 bg-white rounded-[3rem] shadow-2xl border border-slate-100 p-12 relative cursor-text group min-h-[400px]"
         onClick={() => inputRef.current?.focus()}
       >
-        <div className="max-w-4xl mx-auto leading-relaxed select-none">
+        <div className="max-w-4xl mx-auto leading-relaxed select-none relative z-0">
           {renderCharacters()}
         </div>
 
@@ -213,12 +227,6 @@ const TypingTesterView: React.FC = () => {
             </div>
           </div>
         )}
-
-        {!startTime && (
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-3 text-[10px] font-black text-slate-300 uppercase tracking-widest animate-bounce">
-            <span className="text-lg">⌨️</span> Start typing to begin...
-          </div>
-        )}
       </div>
 
       {/* Knowledge Base Overlay */}
@@ -233,6 +241,8 @@ const TypingTesterView: React.FC = () => {
           </p>
         </div>
       </div>
+
+      <br />
     </div>
   );
 };
